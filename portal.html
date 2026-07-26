@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acompanhe seu processo · Elite Consultoria e Consórcios</title>
+<meta name="theme-color" content="#C9A85C">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Elite Consultoria e Consórcios — branding board (reskin do Vizio Consórcio):
+     ouro #C9A85C · champagne #E6D08A · ouro antigo #A8863B · cromado #C9CBD1 · preto #0A0A0B */
+  --blue:#C9A85C;--blue-l:#E6D08A;--blue-d:#A8863B;--chrome:#C9CBD1;
+  --bg:#0A0A0B;--bg2:#141416;--surface:#1A1A1E;--surface2:#242429;--border:#34343B;--border2:#202024;
+  --text:#E9E4DA;--head:#FBF7EF;--muted:#A7A39B;--muted2:#7A766E;--soft:rgba(201,168,92,.16);
+  --ok:#4ADE80;--ok-bg:rgba(22,163,74,.16);--ok-bd:#1F7A48;--gold:#C9A85C;--warn:#FBBF24;--warn-bg:rgba(217,119,6,.16);
+  --font:'Inter',system-ui,sans-serif;--font-display:'Chakra Petch','Inter',sans-serif;
+}
+.wm{font-family:'Michroma',sans-serif!important;letter-spacing:.14em!important}
+*{box-sizing:border-box;margin:0;padding:0}
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{width:0;height:0;display:none}
+body{font-family:var(--font);background:
+  radial-gradient(120% 80% at 85% -10%,#16224A 0%,rgba(11,14,22,0) 55%),
+  radial-gradient(90% 70% at 0% 110%,#1B1740 0%,rgba(11,14,22,0) 50%),var(--bg);
+  color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.55;min-height:100vh}
+h1,h2,h3,.wm{font-family:var(--font-display);letter-spacing:-.01em}
+.wrap{max-width:760px;margin:0 auto;padding:26px 18px 60px}
+@keyframes vzpulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(37,99,235,0))}50%{transform:scale(1.06);filter:drop-shadow(0 0 10px rgba(37,99,235,.5))}}
+@keyframes vzrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card,.celebrate,.reassure{animation:vzrise .5s ease both}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px}.brand img{height:26px;animation:vzpulse 2.8s ease-in-out infinite}
+.brand .wm{font-weight:400;letter-spacing:.26em;font-size:.95rem;color:#fff}.brand small{display:block;font-weight:500;color:var(--blue);font-size:.56rem;letter-spacing:.24em;text-transform:uppercase;margin-top:2px}
+.empresa{font-size:.82rem;color:var(--muted)}.empresa b{color:#D7DEEC}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+.hello{font-size:.9rem;color:var(--muted)}.hello b{color:#fff}
+h1.title{font-size:1.5rem;color:#fff;margin:4px 0 2px}
+.sub{color:var(--muted);font-size:.92rem}
+.badge{display:inline-block;font-size:.74rem;font-weight:700;padding:4px 12px;border-radius:20px}
+.b-blue{background:var(--soft);color:var(--blue-l)}.b-ok{background:var(--ok-bg);color:#5BE49B;border:1px solid var(--ok-bd)}
+.fin{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.fin div{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:13px 15px}
+.fin .l{font-size:.66rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.fin .v{font-size:1.02rem;color:#fff;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.fin .v.ok{color:#5BE49B}
+.prog{margin-top:20px}
+.prog .lab{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:7px;flex-wrap:wrap;gap:4px}
+.bar{height:14px;background:var(--border);border-radius:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#2563EB,#3C94FC);border-radius:10px;width:0;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.prog .fim{font-size:.78rem;color:var(--muted2);margin-top:8px}
+.next{margin-top:18px;background:linear-gradient(150% 130% at 85% 0%,#16224A,#141A26 60%);border:1px solid #26407F;border-radius:13px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.next.aberta{border-color:var(--warn);background:linear-gradient(150% 130% at 85% 0%,#2A2210,#141A26 60%)}
+.next .k{color:var(--muted);font-size:.82rem}.next .val{color:#fff;font-weight:800;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.note{font-size:.8rem;color:var(--warn);margin-top:10px;background:var(--warn-bg);border-radius:9px;padding:9px 12px}
+.mini{margin-top:14px}
+.mini .h{font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:8px}
+.mini .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2);font-size:.86rem}
+.mini .row:last-child{border-bottom:none}.mini .row span{color:var(--muted)}.mini .row b{color:#fff;font-variant-numeric:tabular-nums}
+.journey{margin-top:8px}
+.step{display:flex;gap:14px;padding:12px 0}
+.dot{width:34px;height:34px;border-radius:50%;flex:0 0 34px;display:flex;align-items:center;justify-content:center;font-size:1rem;border:2px solid var(--border);background:var(--surface2);color:var(--muted2);position:relative}
+.step.done .dot{background:var(--ok-bg);border-color:var(--ok-bd);color:#5BE49B}
+.step.active .dot{background:var(--soft);border-color:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--soft)}
+.step .line{position:absolute;top:34px;left:50%;transform:translateX(-50%);width:2px;height:26px;background:var(--border)}
+.step:last-child .line{display:none}
+.step .txt b{color:#fff;font-size:.92rem;display:block}.step .txt span{color:var(--muted);font-size:.82rem}
+.step.done .txt b{color:#D7DEEC}
+.celebrate{background:linear-gradient(160% 140% at 80% 0%,#1E2A12 0%,#141A26 55%);border:1px solid var(--ok-bd);border-radius:16px;padding:26px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.celebrate .big{font-size:2.6rem;animation:vzpulse 2.4s ease-in-out infinite}
+.celebrate h2{font-size:1.6rem;color:#fff;margin:6px 0}
+.celebrate p{color:#D7DEEC;font-size:.98rem;max-width:520px;margin:0 auto}
+.reassure{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:12px;padding:16px 18px;color:var(--text);font-size:.92rem;margin-bottom:16px}
+.reassure b{color:#fff}
+.support{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.support .who{font-size:.86rem;color:var(--muted)}.support .who b{color:#fff}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-weight:700;font-size:.9rem;text-decoration:none;padding:11px 18px;border-radius:11px;border:1px solid var(--blue-d);transition:transform .12s,background .12s}
+.cta:hover{background:var(--blue-d);transform:translateY(-1px)}
+.foot{text-align:center;color:var(--muted2);font-size:.78rem;margin-top:24px}
+.loading,.err{text-align:center;color:var(--muted);padding:60px 20px}
+.err b{color:#fff}
+@media(max-width:560px){.fin{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><img src="elite-symbol.png" alt="Elite Consultoria e Consórcios"><div><span class="wm">ELITE</span><small>CONSULTORIA E CONSÓRCIOS</small></div></div>
+    <div class="empresa" id="empresa"></div>
+  </div>
+  <div id="content"><div class="loading">Carregando seu acompanhamento…</div></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="dados.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+  var CFG=(typeof DADOS!=="undefined"&&DADOS._cfg)?DADOS._cfg:{};
+  function BRL(n){return "R$ "+(Number(n)||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function dBR(s){if(!s)return "—";var p=String(s).slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):s;}
+  function primeiro(s){return String(s||"").trim().split(/\s+/)[0]||"";}
+  function soDig(s){return String(s||"").replace(/\D/g,"");}
+  function hoje(){return new Date().toISOString().slice(0,10);}
+  function addMeses(iso,m){var d=new Date((String(iso).slice(0,10))+"T00:00:00");if(isNaN(d))return null;d.setMonth(d.getMonth()+m);return d;}
+  function mesAno(d){return d?d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}):"—";}
+  function q(name){var m=new RegExp("[?&]"+name+"=([^&]+)").exec(location.search);return m?decodeURIComponent(m[1]):"";}
+  function err(msg){document.getElementById("content").innerHTML='<div class="err"><div style="font-size:2rem">🔒</div><b>'+esc(msg)+'</b><br><span style="font-size:.88rem">Confira o link com a empresa que enviou o acompanhamento.</span></div>';}
+
+  var token=q("t");
+  if(!token){err("Link inválido.");return;}
+  if(!CFG.supabaseUrl||!window.supabase){err("Serviço indisponível no momento.");return;}
+  var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+
+  SB.rpc("portal_contrato",{p_token:token}).then(function(r){
+    if(r.error||!r.data){err("Não encontramos este acompanhamento.");return;}
+    render(r.data);
+  }).catch(function(){err("Não foi possível carregar agora.");});
+
+  function render(d){
+    var empresa=d.empresa||"sua consultoria";
+    document.getElementById("empresa").innerHTML='Acompanhamento por <b>'+esc(empresa)+'</b>';
+    document.getElementById("foot").innerHTML=esc(empresa)+' · <b style="color:#9AA6BE">Tecnologia VIZIO</b>';
+    var tipoLabel=d.tipo==="financiamento"?"financiamento":"consórcio";
+    var pagas=Number(d.pagas)||0, total=Number(d.total_parcelas)||0;
+    var pct=total>0?Math.round(pagas/total*100):0;
+    var restantes=Math.max(0,total-pagas);
+    var contemplado=!!d.contemplado;
+    var pago=Number(d.pago)||0, saldo=Number(d.saldo)||0;
+    var fim=(d.data_adesao&&d.prazo_meses)?mesAno(addMeses(d.data_adesao,Number(d.prazo_meses)-1)):null;
+    var emAberto=(!contemplado&&d.proxima&&d.proxima.vencimento&&String(d.proxima.vencimento).slice(0,10)<hoje());
+    var wa=null;
+    if(d.contato){var dig=soDig(d.contato);if(dig){if(dig.length<=11)dig="55"+dig;wa="https://wa.me/"+dig+"?text="+encodeURIComponent("Olá! Sou "+(d.cliente||"")+" e acompanho meu "+tipoLabel+" pela "+empresa+". Gostaria de falar sobre o meu plano.");}}
+    var nextHtml="";
+    if(d.proxima&&!contemplado){
+      nextHtml='<div class="next'+(emAberto?" aberta":"")+'"><div><div class="k">'+(emAberto?"Parcela em aberto":"Próxima parcela")+'</div><div class="val">'+BRL(d.proxima.valor)+'</div></div><div style="text-align:right"><div class="k">Vencimento</div><div class="val">'+dBR(d.proxima.vencimento)+'</div></div></div>'+
+        (emAberto?'<div class="note">Consta uma parcela em aberto. Se você já pagou, tudo bem — pode desconsiderar; os sistemas às vezes levam alguns dias para atualizar. Qualquer dúvida, fale com a '+esc(empresa)+'.</div>':"");
+    }
+    var html="";
+
+    if(contemplado){
+      html+='<div class="celebrate"><div class="big">🎉🔑</div><h2>Você foi contemplado!</h2>'+
+        '<p>'+esc(primeiro(d.cliente))+', chegou o grande momento: sua carta de crédito de <b style="color:#fff">'+BRL(d.valor_credito)+'</b> foi <b style="color:#5BE49B">contemplada</b>'+(d.data_contemplacao?(' em <b style="color:#fff">'+dBR(d.data_contemplacao)+'</b>'):"")+'. É a conquista do seu '+esc(d.bem||"bem")+' saindo do papel. A '+esc(empresa)+' vai te guiar em cada passo daqui pra frente — você não está sozinho(a) nessa. Parabéns! 👏</p></div>';
+    }
+
+    html+='<div class="card">'+
+      '<div class="hello">Olá, <b>'+esc(d.cliente||"cliente")+'</b> 👋</div>'+
+      '<h1 class="title">Seu '+tipoLabel+' está '+(contemplado?'<span style="color:#5BE49B">contemplado</span>':'em dia e avançando')+'</h1>'+
+      '<div class="sub">'+esc((d.bem?("Rumo ao seu "+d.bem):"Rumo à sua conquista"))+(d.administradora?(" · "+esc(d.administradora)):"")+(d.grupo?(" · Grupo "+esc(d.grupo)):"")+(d.cota?(" · Cota "+esc(d.cota)):"")+'</div>'+
+      '<div class="fin">'+
+        '<div><div class="l">Carta de crédito</div><div class="v">'+BRL(d.valor_credito)+'</div></div>'+
+        '<div><div class="l">Já pago</div><div class="v ok">'+BRL(pago)+'</div></div>'+
+        '<div><div class="l">Saldo restante</div><div class="v">'+BRL(saldo)+'</div></div>'+
+        '<div><div class="l">Parcela</div><div class="v">'+BRL(d.parcela_base)+'</div></div>'+
+      '</div>'+
+      (total>0?('<div class="prog"><div class="lab"><span>Progresso do plano</span><span>'+pagas+' de '+total+' parcelas · '+pct+'%</span></div><div class="bar"><i id="pbar"></i></div>'+
+        '<div class="fim">'+(restantes>0?("Faltam <b style=\"color:#D7DEEC\">"+restantes+"</b> parcela(s)"):"Plano quitado")+(fim&&!contemplado?(" · previsão de conclusão em <b style=\"color:#D7DEEC\">"+esc(fim)+"</b>"):"")+'</div></div>'):"")+
+      nextHtml+
+      '</div>';
+
+    if(!contemplado){
+      html+='<div class="reassure">💙 <b>Fique tranquilo(a).</b> Cada parcela paga te aproxima da contemplação. Seu plano está sendo acompanhado de perto pela '+esc(empresa)+' — e assim que a sua vez chegar, você será o(a) primeiro(a) a saber, aqui mesmo. Estamos com você em cada etapa. 🤝</div>';
+    }
+
+    // próximas parcelas
+    if(!contemplado&&d.proximas&&d.proximas.length){
+      html+='<div class="card"><div class="mini"><div class="h">Próximas parcelas</div>'+
+        d.proximas.map(function(p){return '<div class="row"><span>Parcela nº '+p.numero+' · vence '+dBR(p.vencimento)+'</span><b>'+BRL(p.valor)+'</b></div>';}).join("")+
+        '</div></div>';
+    }
+
+    // jornada
+    var steps=[
+      {ic:"📝",t:"Adesão ao plano",s:"Você deu o passo mais importante: começar.",done:true,active:false},
+      {ic:"📅",t:"Pagamentos em dia",s:pagas+" de "+(total||"—")+" parcelas — construindo sua conquista.",done:pagas>0,active:!contemplado},
+      {ic:"🎯",t:"Contemplação",s:contemplado?("Contemplado"+(d.data_contemplacao?(" em "+dBR(d.data_contemplacao)):"")+"! 🎉"):"Seu grande momento está a caminho.",done:contemplado,active:contemplado},
+      {ic:"🔑",t:"Conquista do "+(d.bem||"bem"),s:contemplado?"A reta final para realizar seu sonho.":"O objetivo de tudo isso.",done:false,active:false}
+    ];
+    html+='<div class="card"><h2 style="font-size:1.05rem;color:#fff;margin-bottom:4px">Sua jornada</h2><div class="sub" style="margin-bottom:10px">Onde você está e o que vem pela frente.</div><div class="journey">'+
+      steps.map(function(st){return '<div class="step '+(st.done?"done":"")+' '+(st.active?"active":"")+'"><div class="dot">'+(st.done?"✓":st.ic)+'<span class="line"></span></div><div class="txt"><b>'+esc(st.t)+'</b><span>'+esc(st.s)+'</span></div></div>';}).join("")+
+      '</div></div>';
+
+    // suporte / contato
+    if(wa||d.consultor){
+      html+='<div class="card"><div class="support"><div class="who">'+(d.consultor?('Seu consultor: <b>'+esc(d.consultor)+'</b><br>'):"")+'<span style="color:var(--muted2);font-size:.82rem">Dúvidas sobre o seu plano? A gente te ajuda.</span></div>'+
+        (wa?('<a class="cta" href="'+esc(wa)+'" target="_blank" rel="noopener">💬 Falar com a '+esc(empresa)+'</a>'):"")+'</div></div>';
+    }
+
+    document.getElementById("content").innerHTML=html;
+    var pb=document.getElementById("pbar"); if(pb){requestAnimationFrame(function(){setTimeout(function(){pb.style.width=pct+"%";},60);});}
+  }
+})();
+</script>
+<script src="aura.js?v=3"></script>
+</body>
+</html>
