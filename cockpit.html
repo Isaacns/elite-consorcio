@@ -127,6 +127,8 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 #login .create{width:100%;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font:inherit;font-weight:600;cursor:pointer}
 #login .err{color:#FCA5A5;font-size:.8rem;min-height:16px;margin:2px 0}#login .link{background:none;border:0;color:var(--blue-l);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
 #login .foot-l{text-align:center;font-size:.72rem;color:var(--muted2);margin-top:16px}
+#login .pw{position:relative}#login .pw input{padding-right:42px}
+#login .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:1rem;line-height:1;padding:4px 7px;color:var(--muted);opacity:.85}#login .eye:hover{opacity:1}
 @media(max-width:920px){aside{display:none}main{padding:16px 14px 50px}.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.fgrid{grid-template-columns:1fr}.pipe{grid-template-columns:1fr;}}
 /* ===== Agenda / Pauta do Dia (§16) — acento do produto (--blue) ===== */
 .ag-foco{display:flex;align-items:center;gap:9px;background:var(--soft);border:1px solid #5C4A22;border-radius:12px;padding:11px 15px;margin-bottom:14px;font-size:.87rem;color:var(--text)}
@@ -183,7 +185,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
     <div class="card-l">
       <div id="viewLogin">
         <div class="field"><label>E-mail</label><input type="email" id="lgEmail" placeholder="voce@empresa.com.br"></div>
-        <div class="field"><label>Senha</label><input type="password" id="lgPass" placeholder="••••••••"></div>
+        <div class="field"><label>Senha</label><div class="pw"><input type="password" id="lgPass" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('lgPass',this)" aria-label="Mostrar senha">👁</button></div></div>
         <div class="err" id="lgErr"></div>
         <button class="enter" onclick="APP.login()">Entrar</button>
         <div style="text-align:right;margin-top:7px"><button class="link" onclick="APP.forgot()">Esqueci minha senha</button></div>
@@ -194,10 +196,17 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
         <div class="field"><label>Seu nome</label><input id="suNome"></div>
         <div class="field"><label>Nome da empresa</label><input id="suEmpresa" placeholder="Ex.: Elite Consórcios"></div>
         <div class="field"><label>E-mail</label><input type="email" id="suEmail"></div>
-        <div class="field"><label>Senha (mín. 6)</label><input type="password" id="suPass"></div>
+        <div class="field"><label>Senha (mín. 6)</label><div class="pw"><input type="password" id="suPass"><button type="button" class="eye" onclick="APP.togglePw('suPass',this)" aria-label="Mostrar senha">👁</button></div></div>
         <div class="err" id="suErr"></div>
         <button class="enter" onclick="APP.signup()">Criar minha conta</button>
         <div style="text-align:center;margin-top:9px"><button class="link" onclick="APP.showSignup(false)">Já tenho conta — entrar</button></div>
+      </div>
+      <div id="viewDefinirSenha" class="hidden">
+        <p style="color:var(--muted);font-size:.86rem;margin-bottom:12px">Bem-vindo à Elite. Defina uma senha para concluir seu primeiro acesso.</p>
+        <div class="field"><label>Nova senha (mín. 6)</label><div class="pw"><input type="password" id="dsPass" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('dsPass',this)" aria-label="Mostrar senha">👁</button></div></div>
+        <div class="field"><label>Repita a senha</label><div class="pw"><input type="password" id="dsPass2" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('dsPass2',this)" aria-label="Mostrar senha">👁</button></div></div>
+        <div class="err" id="dsErr"></div>
+        <button class="enter" onclick="APP.definirSenha()">Salvar senha e entrar</button>
       </div>
     </div>
     <div class="foot-l">Elite Consultoria e Consórcios · Cockpit <b style="color:var(--muted)">Tecnologia VIZIO</b></div>
@@ -1404,14 +1413,32 @@ window.APP=(function(){
   }
   function showSignup(on){document.getElementById("viewLogin").classList.toggle("hidden",on);document.getElementById("viewSignup").classList.toggle("hidden",!on);}
   function logout(){SB.auth.signOut().finally(function(){location.reload();});}
+  function togglePw(id,btn){var el=document.getElementById(id);if(!el)return;var show=el.type==="password";el.type=show?"text":"password";if(btn){btn.textContent=show?"🙈":"👁";btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");}}
+  function mostrarDefinirSenha(){var lg=document.getElementById("login");if(lg)lg.classList.remove("hidden");var a=document.getElementById("app");if(a)a.classList.add("hidden");document.getElementById("viewLogin").classList.add("hidden");document.getElementById("viewSignup").classList.add("hidden");document.getElementById("viewDefinirSenha").classList.remove("hidden");}
+  function definirSenha(){
+    var err=document.getElementById("dsErr");var p=v("dsPass"),p2=v("dsPass2");
+    if(!p||p.length<6){err.style.color="";err.textContent="A senha precisa de no mínimo 6 caracteres.";return;}
+    if(p!==p2){err.style.color="";err.textContent="As senhas não conferem.";return;}
+    err.style.color="";err.textContent="Salvando…";
+    SB.auth.updateUser({password:p}).then(function(r){
+      if(r.error){err.textContent="Erro: "+r.error.message;return;}
+      if(history.replaceState)history.replaceState(null,"",location.pathname+location.search);
+      SB.auth.getSession().then(function(s){var u=s.data&&s.data.session&&s.data.session.user;
+        if(u){afterAuth(u).catch(function(e){err.textContent="Erro ao carregar: "+(e.message||e);});}
+        else{document.getElementById("viewDefinirSenha").classList.add("hidden");document.getElementById("viewLogin").classList.remove("hidden");toast("Senha definida! Faça login.","ok");}});
+    });
+  }
   function boot(){
     if(booted)return;booted=true;
     if(!CFG.supabaseUrl||CFG.supabaseUrl.indexOf("SEU-PROJETO")>=0||!window.supabase){document.getElementById("lgErr").textContent="Configuração pendente.";return;}
     SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    SB.auth.onAuthStateChange(function(ev){if(ev==="PASSWORD_RECOVERY"){mostrarDefinirSenha();}});
+    var _h=location.hash||"";
+    if(_h.indexOf("type=recovery")>=0||_h.indexOf("type=invite")>=0){mostrarDefinirSenha();return;}
     SB.auth.getSession().then(function(s){if(s.data&&s.data.session){afterAuth(s.data.session.user).catch(function(){});}});
   }
 
-  return {boot:boot,go:go,login:login,signup:signup,forgot:forgot,showSignup:showSignup,logout:logout,toast:toast,criarOrg:criarOrg,
+  return {boot:boot,go:go,login:login,signup:signup,forgot:forgot,showSignup:showSignup,logout:logout,toast:toast,criarOrg:criarOrg,definirSenha:definirSenha,togglePw:togglePw,
     formCliente:formCliente,delCliente:delCliente,qcli:qcli,cliFiltro:cliFiltro,abrirCli:abrirCli,voltarCli:voltarCli,
     novaInteracao:novaInteracao,addInteracaoRapida:addInteracaoRapida,delInteracao:delInteracao,editFollowup:editFollowup,
     concluirFollowup:concluirFollowup,novaVendaCli:novaVendaCli,novoContratoCli:novoContratoCli,confirmModal:confirmModal,
