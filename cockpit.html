@@ -1022,6 +1022,7 @@ window.APP=(function(){
         (contemplado?'<button class="btn ghost sm" onclick="APP.toggleContemplado(\''+id+'\')">Desfazer contemplação</button>':'<button class="btn sm" onclick="APP.toggleContemplado(\''+id+'\')">🎉 Marcar contemplado</button>')+
         '<button class="btn ghost sm" onclick="APP.criarCronograma(\''+id+'\')">'+(r.tem?"↻ Regerar cronograma":"＋ Gerar cronograma")+'</button>'+
         '<button class="btn ghost sm" onclick="APP.formContrato(\''+id+'\')">✏️ Editar</button>'+
+        '<button class="btn ghost sm" onclick="APP.imprimirContrato(\''+id+'\')">🖨 Imprimir</button>'+
       '</div></div>';
     var kpis='<div class="kpis">'+
       kpi("Crédito",BRL(c.valor_credito),(c.tipo==="consorcio"?"carta de crédito":"valor financiado"),"accent")+
@@ -1046,11 +1047,106 @@ window.APP=(function(){
             '<td>'+(pd?'<button class="act" title="Estornar" onclick="APP.estornarPaga(\''+p.id+'\')">↩</button>':'<button class="act" title="Registrar pagamento" onclick="APP.marcarPaga(\''+p.id+'\')">✔</button>')+'</td></tr>';
         }).join("")+'</tbody></table></div>')
         :'<div class="empty">Nenhuma parcela gerada. <button class="btn sm" onclick="APP.criarCronograma(\''+id+'\')">＋ Gerar cronograma</button></div>')+'</div>';
+    var temAssin=!!c.assinado_url;
+    var cardAssinado='<div class="card"><h2>📎 Contrato assinado</h2><div class="csub">Anexe o PDF ou imagem do contrato assinado pelo cliente (fica guardado com segurança).</div>'+
+      (temAssin?
+        ('<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge b-ok">Assinado anexado</span>'+
+          '<button class="btn sm" onclick="APP.baixarAssinado(\''+id+'\')">⬇ Baixar / ver</button>'+
+          '<button class="btn ghost sm" onclick="APP.uploadAssinado(\''+id+'\')">↻ Substituir</button>'+
+          '<button class="btn ghost sm" onclick="APP.removerAssinado(\''+id+'\')">Remover</button></div>')
+        :('<div class="empty">Nenhum contrato assinado anexado.<div style="margin-top:8px"><button class="btn sm" onclick="APP.uploadAssinado(\''+id+'\')">📎 Anexar assinado</button></div></div>'))+
+      '</div>';
     document.getElementById("view").innerHTML=
       '<div class="topbar"><div><button class="btn ghost sm" onclick="APP.voltarContratos()">← Contratos</button><h1 style="margin-top:8px">'+esc(cli)+'</h1><p>Contrato 360 · '+esc(c.administradora||(c.tipo==="consorcio"?"Consórcio":"Financiamento"))+'.</p></div>'+
         '<button class="act" title="Excluir contrato" onclick="APP.delContrato(\''+id+'\')" style="font-size:1rem">🗑</button></div>'+
       head+kpis+
-      '<div class="grid2"><div>'+cardCron+'</div><div>'+contempCard+'</div></div>';
+      '<div class="grid2"><div>'+cardCron+'</div><div>'+contempCard+cardAssinado+'</div></div>';
+  }
+  /* ---- Imprimir contrato (via imprimível, padrão Inovar: window.open + print) ---- */
+  function imprimirContrato(id){
+    var c=S.contratos.find(function(x){return x.id===id;}); if(!c){return;}
+    var cli=clienteNome(c.cliente_id), ps=parcelasDe(id), r=resumoContrato(c), parcela=parcelaContrato(c);
+    var empresa=(S.config&&S.config.nome_empresa)||S.org.nome||"Consórcio";
+    var contemplado=c.contemplado||c.status==="contemplado";
+    var statusTxt=contemplado?"Contemplado":(c.status==="quitado"?"Quitado":c.status==="cancelado"?"Cancelado":"Em andamento");
+    var tipoTxt=c.tipo==="consorcio"?"Consórcio":"Financiamento";
+    var win=window.open("","_blank"); if(!win){toast("Permita pop-ups para imprimir.","warn");return;}
+    var row=function(l,val){return '<tr><td class="l">'+esc(l)+'</td><td class="v">'+esc(val)+'</td></tr>';};
+    var grupoCota=((c.grupo?("G"+c.grupo):"")+(c.grupo&&c.cota?" · ":"")+(c.cota?("Cota "+c.cota):""))||"—";
+    var linhas=ps.map(function(p){var pd=paga(p);var sit=pd?"Paga":(p.vencimento&&String(p.vencimento).slice(0,10)<today()?"Atrasada":"Aberta");
+      return '<tr><td>'+p.numero+'</td><td>'+dBR(p.vencimento)+'</td><td>'+BRL(pd?(p.valor_pago||p.valor_previsto):p.valor_previsto)+'</td><td>'+sit+'</td></tr>';}).join("");
+    win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Contrato — '+esc(cli)+'</title>'+
+      '<style>*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#16181C;padding:30px 38px;max-width:820px;margin:0 auto;line-height:1.5}'+
+      'h1{font-size:19px;margin:0;color:#111}.hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #444;padding-bottom:12px;margin-bottom:16px}'+
+      '.hd .sub{font-size:12px;color:#666;margin-top:3px}.badge{display:inline-block;font-size:11px;border:1px solid #999;border-radius:20px;padding:2px 10px;color:#333}'+
+      'table{width:100%;border-collapse:collapse;margin:6px 0 14px}td,th{text-align:left;font-size:12.5px;padding:6px 8px;border-bottom:1px solid #e2e2e2}'+
+      '.info td.l{color:#666;width:38%}.info td.v{color:#111;font-weight:600}'+
+      '.sec{font-size:13px;font-weight:bold;margin:20px 0 4px;color:#111;border-left:3px solid #888;padding-left:8px}'+
+      '.par th{background:#f4f4f4;color:#555;font-weight:600;border-bottom:1px solid #ccc}'+
+      '.ass{margin-top:54px;display:flex;gap:48px}.ass div{flex:1;border-top:1px solid #333;padding-top:6px;font-size:12px;text-align:center;color:#555}'+
+      '.foot{margin-top:30px;border-top:1px solid #ccc;padding-top:8px;font-size:10px;color:#999;display:flex;justify-content:space-between}'+
+      '@media print{body{padding:6px 0}}</style></head><body>'+
+      '<div class="hd"><div><h1>'+esc(empresa)+'</h1><div class="sub">Contrato de '+tipoTxt+(c.administradora?' · '+esc(c.administradora):'')+'</div></div>'+
+        '<div style="text-align:right;font-size:11px;color:#777">Emitido em '+new Date().toLocaleDateString("pt-BR")+'<br><span class="badge">'+esc(statusTxt)+'</span></div></div>'+
+      '<div class="sec">Consorciado</div><table class="info">'+row("Nome",cli)+row("Bem / objetivo",c.bem||"—")+'</table>'+
+      '<div class="sec">Dados do contrato</div><table class="info">'+
+        row("Tipo",tipoTxt)+row("Administradora / Banco",c.administradora||"—")+row("Grupo / Cota",grupoCota)+
+        row("Crédito",BRL(c.valor_credito))+row("Parcela mensal",BRL(parcela))+
+        row("Prazo",(c.prazo_meses?c.prazo_meses+" meses":"—"))+row("Adesão",c.data_adesao?dBR(c.data_adesao):"—")+
+        (c.tipo==="consorcio"?row("Índice de reajuste",c.indice_reajuste||"—"):row("Sistema",c.sistema||"—"))+
+        (contemplado?row("Contemplação",c.data_contemplacao?dBR(c.data_contemplacao):"Sim"):"")+
+        row("Pago",BRL(r.pago)+" ("+r.pagas+"/"+r.total+" parcelas)")+row("Saldo a pagar",BRL(r.saldo))+'</table>'+
+      (ps.length?('<div class="sec">Cronograma de parcelas</div><table class="par"><thead><tr><th>Nº</th><th>Vencimento</th><th>Valor</th><th>Situação</th></tr></thead><tbody>'+linhas+'</tbody></table>'):'')+
+      '<div class="ass"><div>Assinatura do consorciado</div><div>'+esc(empresa)+'</div></div>'+
+      '<div class="foot"><span>'+esc(empresa)+' · Documento gerado pelo cockpit</span><span>Tecnologia VIZIO</span></div>'+
+      '</body></html>');
+    win.document.close();setTimeout(function(){try{win.print();}catch(e){}},350);
+  }
+  /* ---- Contrato assinado: upload/download/remove no bucket privado "contratos" (signed URL) ---- */
+  function _pickFile(accept,cb){
+    var inp=document.createElement("input");inp.type="file";if(accept)inp.accept=accept;inp.style.display="none";
+    document.body.appendChild(inp);
+    inp.addEventListener("change",function(){var f=inp.files&&inp.files[0];if(inp.parentNode)inp.parentNode.removeChild(inp);if(f)cb(f);});
+    inp.click();
+  }
+  function uploadAssinado(id){
+    var c=S.contratos.find(function(x){return x.id===id;}); if(!c)return;
+    if(!canE("contratos")){toast("Seu perfil não tem permissão para editar contratos.","warn");return;}
+    _pickFile("application/pdf,image/*",function(file){
+      var ok=/^application\/pdf$/.test(file.type)||/^image\//.test(file.type);
+      if(!ok){toast("Envie um PDF ou uma imagem.","warn");return;}
+      if(file.size>15*1024*1024){toast("Arquivo muito grande (máx. 15 MB).","warn");return;}
+      var ext=(String(file.name).split(".").pop()||"pdf").toLowerCase().replace(/[^a-z0-9]/g,"")||"pdf";
+      var path=S.org.id+"/"+id+"-"+Date.now()+"."+ext;
+      toast("Enviando contrato assinado…","ok");
+      SB.storage.from("contratos").upload(path,file,{upsert:false,contentType:file.type}).then(function(up){
+        if(up.error){toast("Falha no envio: "+up.error.message,"danger");return;}
+        var prev=c.assinado_url;
+        SB.from("co_contratos").update({assinado_url:path}).eq("id",id).then(function(r){
+          if(r.error){toast("Enviado, mas não vinculou: "+r.error.message,"danger");return;}
+          c.assinado_url=path;
+          if(prev&&prev!==path&&String(prev).indexOf("http")!==0){SB.storage.from("contratos").remove([prev]);}
+          toast("Contrato assinado anexado.","ok");renderContratoDetalhe(id);
+        });
+      },function(){toast("Falha no envio do arquivo.","danger");});
+    });
+  }
+  function baixarAssinado(id){
+    var c=S.contratos.find(function(x){return x.id===id;}); if(!c||!c.assinado_url)return;
+    if(String(c.assinado_url).indexOf("http")===0){window.open(c.assinado_url,"_blank","noopener");return;}
+    SB.storage.from("contratos").createSignedUrl(c.assinado_url,3600).then(function(r){
+      if(r.error||!r.data){toast("Não foi possível gerar o link: "+((r.error&&r.error.message)||"erro"),"danger");return;}
+      window.open(r.data.signedUrl,"_blank","noopener");
+    });
+  }
+  function removerAssinado(id){
+    var c=S.contratos.find(function(x){return x.id===id;}); if(!c||!c.assinado_url)return;
+    if(!canE("contratos")){toast("Sem permissão.","warn");return;}
+    confirmModal("Remover o contrato assinado anexado? O arquivo será apagado do armazenamento.",function(){
+      var path=c.assinado_url;
+      var done=function(){SB.from("co_contratos").update({assinado_url:null}).eq("id",id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}c.assinado_url=null;toast("Anexo removido.","ok");renderContratoDetalhe(id);});};
+      if(path&&String(path).indexOf("http")!==0){SB.storage.from("contratos").remove([path]).then(done,done);}else done();
+    },"Remover",true);
   }
   function criarCronograma(id){
     var c=S.contratos.find(function(x){return x.id===id;}); if(!c)return;
@@ -1744,12 +1840,36 @@ window.APP=(function(){
   function editarFoto(){
     toggleUserMenu(false);var m=S.member||{};
     modal("Foto do perfil",
-      '<div class="csub" style="margin-bottom:11px;color:var(--muted);font-size:.82rem">Cole o endereço (URL) de uma imagem. O envio de arquivo do próprio dispositivo chega em breve.</div>'+
+      '<div class="csub" style="margin-bottom:11px;color:var(--muted);font-size:.82rem">Envie uma imagem do seu dispositivo (JPG, PNG, WEBP — até 5 MB) ou cole o endereço (URL) de uma foto.</div>'+
+      '<div class="field"><label>Enviar do dispositivo</label><input id="pf_file" type="file" accept="image/*"></div>'+
+      '<div style="text-align:center;color:var(--muted2);font-size:.74rem;margin:4px 0 8px">— ou —</div>'+
       '<div class="field"><label>URL da imagem</label><input id="pf_foto" placeholder="https://..." value="'+esc(m.foto_url||"")+'"></div>',
-      function(){var url=v("pf_foto").trim();
-        SB.from("co_members").update({foto_url:url||null}).eq("id",m.id).then(function(r){if(r.error){toast("Não foi possível salvar a foto: "+r.error.message,"danger");return;}S.member.foto_url=url;paintUser();closeModal();toast(url?"Foto atualizada.":"Foto removida.","ok");});
+      function(){
+        var fe=document.getElementById("pf_file");var file=fe&&fe.files&&fe.files[0];
+        if(file){subirFoto(file);return false;}
+        var url=v("pf_foto").trim();
+        SB.from("co_members").update({foto_url:url||null}).eq("id",m.id).then(function(r){if(r.error){toast("Não foi possível salvar a foto: "+r.error.message,"danger");return;}S.member.foto_url=url;var mm=S.members.find(function(x){return x.id===m.id;});if(mm)mm.foto_url=url;paintUser();closeModal();toast(url?"Foto atualizada.":"Foto removida.","ok");});
         return false;},
-      (m.foto_url?'<button class="btn ghost" onclick="var e=document.getElementById(\'pf_foto\');if(e)e.value=\'\'">Remover foto</button>':""));
+      (m.foto_url?'<button class="btn ghost" onclick="var e=document.getElementById(\'pf_foto\');if(e)e.value=\'\';var f=document.getElementById(\'pf_file\');if(f)f.value=\'\'">Remover foto</button>':""));
+  }
+  /* Upload real da foto de perfil → bucket público "avatars" (path por org). Requer Supabase Storage. */
+  function subirFoto(file){
+    var m=S.member||{};
+    if(!/^image\//.test(file.type)){toast("Selecione um arquivo de imagem.","warn");return;}
+    if(file.size>5*1024*1024){toast("Imagem muito grande (máx. 5 MB).","warn");return;}
+    var ext=(String(file.name).split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"")||"png";
+    var path=S.org.id+"/"+m.id+"-"+Date.now()+"."+ext;
+    toast("Enviando foto…","ok");
+    SB.storage.from("avatars").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"}).then(function(up){
+      if(up.error){toast("Falha no envio: "+up.error.message,"danger");return;}
+      var pub=SB.storage.from("avatars").getPublicUrl(path);
+      var url=(pub&&pub.data&&pub.data.publicUrl)||"";
+      SB.from("co_members").update({foto_url:url}).eq("id",m.id).then(function(r){
+        if(r.error){toast("Enviado, mas não salvou: "+r.error.message,"danger");return;}
+        S.member.foto_url=url;var mm=S.members.find(function(x){return x.id===m.id;});if(mm)mm.foto_url=url;
+        paintUser();closeModal();toast("Foto enviada e atualizada.","ok");
+      });
+    },function(){toast("Falha no envio da foto.","danger");});
   }
   function trocarSenha(){
     toggleUserMenu(false);
@@ -1908,6 +2028,7 @@ window.APP=(function(){
     concluirFollowup:concluirFollowup,novaVendaCli:novaVendaCli,novoContratoCli:novoContratoCli,confirmModal:confirmModal,
     formVenda:formVenda,delVenda:delVenda,
     formContrato:formContrato,qcon:qcon,conFiltro:conFiltro,abrirContrato:abrirContrato,voltarContratos:voltarContratos,
+    imprimirContrato:imprimirContrato,uploadAssinado:uploadAssinado,baixarAssinado:baixarAssinado,removerAssinado:removerAssinado,
     criarCronograma:criarCronograma,marcarPaga:marcarPaga,estornarPaga:estornarPaga,toggleContemplado:toggleContemplado,delContrato:delContrato,
     portalLink:portalLink,cadastroLink:cadastroLink,formLanc:formLanc,delLanc:delLanc,
     qv:qv,vcons:vcons,dragStart:dragStart,dragEnd:dragEnd,dragOver:dragOver,dragLeave:dragLeave,drop:drop,
@@ -1926,7 +2047,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.5';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.6';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
