@@ -14,6 +14,8 @@ const DADOS = {
     // Projeto Supabase DEDICADO da Elite: elite-consorcio (sa-east-1, ref wcjvmgmxizhwaolyusvx).
     supabaseUrl: "https://wcjvmgmxizhwaolyusvx.supabase.co",
     supabaseKey: "sb_publishable_nIg3tcSJqvOy_tsaVneMNw_qbdrP7Hj",
+    // Token padrão do link curto de auto-cadastro (single-org). O base multi-empresa NÃO define isto (usa ?t=).
+    cadastroToken: "61874307-d568-4aee-adb6-f3de7f03342e",
     // TODO: link de checkout do produto "Vizio Consórcio — Mensal" (Stripe)
     assinaturaUrl: "https://buy.stripe.com/PREENCHER"
   },

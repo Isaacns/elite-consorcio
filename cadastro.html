@@ -92,7 +92,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
   el("foot").innerHTML='Elite Consultoria e Consórcios · Tecnologia <b style="color:#B9B4AA">VIZIO · INPERSON</b>';
 
-  var token=q("t");
+  var token=q("t")||CFG.cadastroToken||"";
   if(!token){errFull("Link de cadastro inválido.");return;}
   if(!CFG.supabaseUrl||!window.supabase){errFull("Serviço indisponível no momento.");return;}
   var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
