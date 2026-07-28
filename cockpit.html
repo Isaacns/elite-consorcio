@@ -14,7 +14,7 @@
      ouro #C9A85C · champagne #E6D08A · ouro antigo #A8863B · cromado #C9CBD1 · preto #0A0A0B */
   --blue:#C9A85C;--blue-l:#E6D08A;--blue-d:#A8863B;--chrome:#C9CBD1;
   --bg:#0A0A0B;--bg2:#141416;--surface:#1A1A1E;--surface2:#242429;--border:#34343B;--border2:#202024;
-  --text:#E9E4DA;--head:#FBF7EF;--muted:#A7A39B;--muted2:#7A766E;--soft:rgba(201,168,92,.16);
+  --text:#E9E4DA;--head:#FBF7EF;--muted:#A7A39B;--muted2:#8E8A80;--soft:rgba(201,168,92,.16);
   --ok:#4ADE80;--ok-bg:rgba(22,163,74,.16);--ok-bd:#1F7A48;--warn:#FBBF24;--warn-bg:rgba(217,119,6,.16);
   --vio:#A78BFA;--vio-bg:rgba(124,58,237,.18);--vio-bd:#5B3CA6;--rose:#F87171;--rose-bg:rgba(225,29,72,.14);
   --font:'Inter',system-ui,sans-serif;--font-display:'Chakra Petch','Inter',sans-serif;
@@ -27,6 +27,8 @@
 body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5}
 h1,h2,h3,.brand .wm{font-family:var(--font-display);letter-spacing:-.01em}
 a{color:var(--blue-l);text-decoration:none}.hidden{display:none!important}.num{font-variant-numeric:tabular-nums}
+/* foco visível de teclado (acessibilidade WCAG 2.4.7) — acento ouro do board */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue-l);outline-offset:2px;border-radius:6px}
 .app{display:flex;min-height:100vh}
 @keyframes vzpulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(201,168,92,0))}50%{transform:scale(1.05);filter:drop-shadow(0 0 9px rgba(201,168,92,.45))}}
 .brand img{animation:vzpulse 2.8s ease-in-out infinite}
@@ -70,7 +72,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .b-blue{background:var(--soft);color:var(--blue-l)}.b-ok{background:var(--ok-bg);color:#5BE49B;border:1px solid var(--ok-bd)}
 .b-warn{background:var(--warn-bg);color:#F0B968}.b-vio{background:var(--vio-bg);color:#C9B8FB;border:1px solid var(--vio-bd)}.b-rose{background:var(--rose-bg);color:#FDA4AF}
-.act{border:0;background:none;padding:4px 6px;border-radius:6px;cursor:pointer;color:var(--muted)}.act:hover{background:var(--surface2);color:#fff}
+.act{border:0;background:none;padding:4px 6px;border-radius:6px;cursor:pointer;color:var(--muted);min-width:30px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}.act:hover{background:var(--surface2);color:#fff}
 .pill{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:.76rem;color:var(--muted)}
 .tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .tools input,.tools select{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:#fff;font:inherit;font-size:.85rem}
@@ -92,7 +94,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .prob{font-size:.64rem;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--soft);color:var(--blue-l)}
 .pcard .qa{position:absolute;top:6px;right:6px;display:none;gap:3px}
 .pcard:hover .qa{display:flex}
-.qa button{border:0;width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:.72rem;line-height:1;display:flex;align-items:center;justify-content:center}
+.qa button{border:0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.72rem;line-height:1;display:flex;align-items:center;justify-content:center}
 .qa .win{background:var(--ok-bg);color:#5BE49B}.qa .lose{background:var(--rose-bg);color:#FDA4AF}.qa .win:hover{background:var(--ok-bd)}.qa .lose:hover{background:#7a2230}
 .pcol.won{background:linear-gradient(180deg,rgba(22,163,74,.05),transparent)}
 .pcolhead{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:8px;font-weight:700}
@@ -143,6 +145,12 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
   .kpis{grid-template-columns:repeat(2,1fr)}
   .grid2,.fgrid{grid-template-columns:1fr}
   .pipe{grid-template-columns:1fr}
+  /* tabelas largas rolam na horizontal em vez de espremer as colunas (responsividade) */
+  table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  table::-webkit-scrollbar{height:6px;display:block}
+  table::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  /* touch não tem :hover — revela as ações rápidas do card de venda (ganhar/perder/gerar) */
+  .pcard .qa{display:flex}
 }
 /* ===== Agenda / Pauta do Dia (§16) — acento do produto (--blue) ===== */
 .ag-foco{display:flex;align-items:center;gap:9px;background:var(--soft);border:1px solid #5C4A22;border-radius:12px;padding:11px 15px;margin-bottom:14px;font-size:.87rem;color:var(--text)}
@@ -198,10 +206,10 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
     </div>
     <div class="card-l">
       <div id="viewLogin">
-        <div class="field"><label>E-mail</label><input type="email" id="lgEmail" placeholder="voce@empresa.com.br"></div>
+        <div class="field"><label for="lgEmail">E-mail</label><input type="email" id="lgEmail" autocomplete="username" placeholder="voce@empresa.com.br"></div>
         <div class="field">
-          <div class="lblrow"><label>Senha</label><button class="link" onclick="APP.forgot()">Esqueci minha senha</button></div>
-          <div class="pw"><input type="password" id="lgPass" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('lgPass',this)" aria-label="Mostrar senha">👁</button></div>
+          <div class="lblrow"><label for="lgPass">Senha</label><button class="link" onclick="APP.forgot()">Esqueci minha senha</button></div>
+          <div class="pw"><input type="password" id="lgPass" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')APP.login()"><button type="button" class="eye" onclick="APP.togglePw('lgPass',this)" aria-label="Mostrar senha">👁</button></div>
         </div>
         <div class="err" id="lgErr"></div>
         <button class="enter" onclick="APP.login()">Entrar</button>
@@ -210,18 +218,18 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
         <button class="create" onclick="APP.showSignup(true)">Criar minha conta e empresa</button>
       </div>
       <div id="viewSignup" class="hidden">
-        <div class="field"><label>Seu nome</label><input id="suNome"></div>
-        <div class="field"><label>Nome da empresa</label><input id="suEmpresa" placeholder="Ex.: Elite Consórcios"></div>
-        <div class="field"><label>E-mail</label><input type="email" id="suEmail"></div>
-        <div class="field"><label>Senha (mín. 6)</label><div class="pw"><input type="password" id="suPass"><button type="button" class="eye" onclick="APP.togglePw('suPass',this)" aria-label="Mostrar senha">👁</button></div></div>
+        <div class="field"><label for="suNome">Seu nome</label><input id="suNome" autocomplete="name"></div>
+        <div class="field"><label for="suEmpresa">Nome da empresa</label><input id="suEmpresa" autocomplete="organization" placeholder="Ex.: Elite Consórcios"></div>
+        <div class="field"><label for="suEmail">E-mail</label><input type="email" id="suEmail" autocomplete="email"></div>
+        <div class="field"><label for="suPass">Senha (mín. 6)</label><div class="pw"><input type="password" id="suPass" autocomplete="new-password" onkeydown="if(event.key==='Enter')APP.signup()"><button type="button" class="eye" onclick="APP.togglePw('suPass',this)" aria-label="Mostrar senha">👁</button></div></div>
         <div class="err" id="suErr"></div>
         <button class="enter" onclick="APP.signup()">Criar minha conta</button>
         <div style="text-align:center;margin-top:9px"><button class="link" onclick="APP.showSignup(false)">Já tenho conta — entrar</button></div>
       </div>
       <div id="viewDefinirSenha" class="hidden">
         <p style="color:var(--muted);font-size:.86rem;margin-bottom:12px">Bem-vindo à Elite. Defina uma senha para concluir seu primeiro acesso.</p>
-        <div class="field"><label>Nova senha (mín. 6)</label><div class="pw"><input type="password" id="dsPass" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('dsPass',this)" aria-label="Mostrar senha">👁</button></div></div>
-        <div class="field"><label>Repita a senha</label><div class="pw"><input type="password" id="dsPass2" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('dsPass2',this)" aria-label="Mostrar senha">👁</button></div></div>
+        <div class="field"><label for="dsPass">Nova senha (mín. 6)</label><div class="pw"><input type="password" id="dsPass" autocomplete="new-password" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw('dsPass',this)" aria-label="Mostrar senha">👁</button></div></div>
+        <div class="field"><label for="dsPass2">Repita a senha</label><div class="pw"><input type="password" id="dsPass2" autocomplete="new-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')APP.definirSenha()"><button type="button" class="eye" onclick="APP.togglePw('dsPass2',this)" aria-label="Mostrar senha">👁</button></div></div>
         <div class="err" id="dsErr"></div>
         <button class="enter" onclick="APP.definirSenha()">Salvar senha e entrar</button>
       </div>
@@ -287,7 +295,7 @@ window.APP=(function(){
   function ini(s){var p=String(s||"?").trim().split(/\s+/);return((p[0][0]||"?")+(p[1]?p[1][0]:"")).toUpperCase();}
   function dBR(s){if(!s)return "—";var p=String(s).slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):s;}
   function today(){return new Date().toISOString().slice(0,10);}
-  function toast(m,k){var t=document.createElement("div");t.className="toast "+(k||"");t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.style.opacity="0";t.style.transition="opacity .4s";},2400);setTimeout(function(){t.remove();},2900);}
+  function toast(m,k){var t=document.createElement("div");t.className="toast "+(k||"");t.setAttribute("role","status");t.setAttribute("aria-live",(k==="danger"?"assertive":"polite"));t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.style.opacity="0";t.style.transition="opacity .4s";},2400);setTimeout(function(){t.remove();},2900);}
   function v(id){var e=document.getElementById(id);return e?e.value:"";}
   function isGestor(){return S.member&&(S.member.papel==="gestor"||S.member.papel==="admin");}
   function memberNome(id){var m=S.members.find(function(x){return x.id===id;});return m?(m.nome||"—"):"—";}
@@ -316,7 +324,7 @@ window.APP=(function(){
   }
   function go(id){
     S._cur=id;
-    document.querySelectorAll("#menu1 button,#menu2 button").forEach(function(b){b.classList.toggle("active",b.dataset.go===id);});
+    document.querySelectorAll("#menu1 button,#menu2 button").forEach(function(b){var on=b.dataset.go===id;b.classList.toggle("active",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
     var R={dashboard:renderDashboard,clientes:renderClientes,vendas:renderVendas,contratos:renderContratos,
       produtividade:renderProdutividade,recuperacao:renderRecuperacao,financeiro:renderFinanceiro,
       agenda:renderAgenda,calendario:renderCalendario,mural:renderMural,aniversarios:renderAniversarios,bemestar:renderBemestar,equipe:renderEquipe};
@@ -343,7 +351,15 @@ window.APP=(function(){
     var pctMeta=meta>0?Math.min(100,Math.round(creditoMes/meta*100)):0;
     var view=document.getElementById("view");
     var alertas=buildAlertasHome();
+    var vazio=(S.clientes.length===0&&S.vendas.length===0&&S.contratos.length===0);
+    var onboard=vazio?('<div class="card" style="background:linear-gradient(150% 130% at 85% 0%,#2A2110,#141416 60%);border-color:#5C4A22"><h2>Bem-vindo(a) ao seu cockpit 👋</h2><div class="csub">Sua conta está pronta. Dê os primeiros passos para colocar a operação no ar.</div>'+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:6px">'+
+        '<button class="btn" onclick="APP.formCliente()">＋ Cadastrar 1º cliente</button>'+
+        '<button class="btn ghost" onclick="APP.go(\'vendas\')">Abrir o funil de vendas</button>'+
+        '<button class="btn ghost" onclick="APP.go(\'equipe\')">Definir a meta do mês</button>'+
+      '</div></div>'):"";
     view.innerHTML=topbar("Dashboard","Visão de decisão — "+new Date().toLocaleDateString("pt-BR",{month:"long",year:"numeric"})+".","")+
+      onboard+
       '<div class="kpis">'+
         kpi("Crédito vendido (mês)",BRL(creditoMes),fechadasMes.length+" negócio(s) fechado(s)","accent")+
         kpi("Pipeline aberto",BRL(pipeValor),pipeAberto.length+" oportunidade(s)","")+
@@ -1353,12 +1369,15 @@ window.APP=(function(){
   /* ---------- modal infra ---------- */
   function modal(title,body,onSave,extraFoot){
     var ovl=document.createElement("div");ovl.className="ovl";ovl.id="mOvl";
-    ovl.innerHTML='<div class="modal"><h3>'+title+'</h3><div class="body">'+body+'</div><div class="foot2">'+(extraFoot||"")+'<button class="btn ghost" onclick="APP.closeModal()">Fechar</button>'+(onSave?'<button class="btn" id="mSave">Salvar</button>':"")+'</div></div>';
+    ovl.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h3>'+title+'</h3><div class="body">'+body+'</div><div class="foot2">'+(extraFoot||"")+'<button class="btn ghost" onclick="APP.closeModal()">Fechar</button>'+(onSave?'<button class="btn" id="mSave">Salvar</button>':"")+'</div></div>';
     ovl.addEventListener("click",function(e){if(e.target===ovl)closeModal();});
+    ovl._esc=function(e){if(e.key==="Escape")closeModal();};
+    document.addEventListener("keydown",ovl._esc);
     document.body.appendChild(ovl);
     if(onSave){document.getElementById("mSave").onclick=function(){onSave();};}
+    var f=ovl.querySelector(".body input,.body select,.body textarea");if(f){try{f.focus();}catch(_){}}
   }
-  function closeModal(){var o=document.getElementById("mOvl");if(o)o.remove();}
+  function closeModal(){var o=document.getElementById("mOvl");if(o){if(o._esc)document.removeEventListener("keydown",o._esc);o.remove();}}
 
   /* ---------- auth + boot ---------- */
   function paintUser(){
