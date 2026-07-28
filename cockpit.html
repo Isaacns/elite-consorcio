@@ -19,6 +19,7 @@
   --vio:#A78BFA;--vio-bg:rgba(124,58,237,.18);--vio-bd:#5B3CA6;--rose:#F87171;--rose-bg:rgba(225,29,72,.14);
   --font:'Inter',system-ui,sans-serif;--font-display:'Chakra Petch','Inter',sans-serif;
   --grad:linear-gradient(90deg,#A8863B,#C9A85C 45%,#E6D08A);--grad-135:linear-gradient(135deg,#A8863B,#E6D08A);
+  --on-accent:#0A0A0B;
 }
 .brand .wm{font-family:'Michroma',sans-serif!important;letter-spacing:.14em!important}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -92,10 +93,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .pcard .pval{color:#fff;font-weight:800;font-size:.86rem;font-variant-numeric:tabular-nums}
 .pcard .pmeta{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
 .prob{font-size:.64rem;font-weight:700;padding:1px 6px;border-radius:20px;background:var(--soft);color:var(--blue-l)}
-.pcard .qa{position:absolute;top:6px;right:6px;display:none;gap:3px}
-.pcard:hover .qa{display:flex}
-.qa button{border:0;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.72rem;line-height:1;display:flex;align-items:center;justify-content:center}
-.qa .win{background:var(--ok-bg);color:#5BE49B}.qa .lose{background:var(--rose-bg);color:#FDA4AF}.qa .win:hover{background:var(--ok-bd)}.qa .lose:hover{background:#7a2230}
+.qa .win{background:var(--ok-bg);color:#5BE49B}.qa .lose{background:var(--rose-bg);color:#FDA4AF}.qa .win:hover{background:var(--ok-bd);color:#fff}.qa .lose:hover{background:#7a2230;color:#fff}.qa .doc{background:var(--soft);color:var(--blue-l)}.qa .doc:hover{filter:brightness(1.15)}
 .pcol.won{background:linear-gradient(180deg,rgba(22,163,74,.05),transparent)}
 .pcolhead{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:8px;font-weight:700}
 .pcolhead .cnt{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:1px 8px;color:var(--text)}
@@ -149,8 +147,9 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
   table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
   table::-webkit-scrollbar{height:6px;display:block}
   table::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-  /* touch não tem :hover — revela as ações rápidas do card de venda (ganhar/perder/gerar) */
-  .pcard .qa{display:flex}
+  /* aura.js injeta #app>aside{position:relative} e derruba o drawer mobile — reforço mobile-scoped */
+  #app aside{position:fixed!important;transform:translateX(-100%)!important}
+  #app aside.open{transform:translateX(0)!important}
 }
 /* ===== Agenda / Pauta do Dia (§16) — acento do produto (--blue) ===== */
 .ag-foco{display:flex;align-items:center;gap:9px;background:var(--soft);border:1px solid #5C4A22;border-radius:12px;padding:11px 15px;margin-bottom:14px;font-size:.87rem;color:var(--text)}
@@ -193,6 +192,68 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .kb-card b{display:block;color:#fff;font-size:.81rem;line-height:1.3}
 .kb-card em{color:var(--muted2);font-size:.7rem;font-style:normal;display:block;margin-top:2px}
 @media(max-width:1100px){.ag-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kb{grid-template-columns:1fr}}
+/* ===== Header persistente + módulo de usuário (topo-direito, padrão Inovar) ===== */
+.apphead{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;background:rgba(20,20,22,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border2);margin:-22px -28px 20px;padding:10px 28px}
+.apphead .grenet{font-size:.9rem;color:var(--muted)}.apphead .grenet b{color:var(--head);font-weight:700}
+.apphead .sp{flex:1}
+.usermenu{position:relative}
+.userchip{display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 10px 5px 6px;cursor:pointer;color:var(--text);font:inherit}
+.userchip:hover{border-color:var(--blue-l)}
+.userchip .uc-txt{text-align:left;line-height:1.12}.userchip .uc-txt b{display:block;font-size:.82rem;color:#fff;font-weight:700}.userchip .uc-txt span{font-size:.68rem;color:var(--muted2)}
+.userchip .uc-caret{color:var(--muted);font-size:.62rem;transition:transform .15s}
+.usermenu.open .uc-caret{transform:rotate(180deg)}
+.userdrop{position:absolute;top:calc(100% + 8px);right:0;min-width:216px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:6px;display:none;z-index:60}
+.usermenu.open .userdrop{display:block;animation:fade .16s ease}
+.userdrop button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:0;color:var(--text);font:inherit;font-size:.86rem;padding:9px 11px;border-radius:8px;cursor:pointer}
+.userdrop button:hover{background:var(--surface2);color:#fff}
+.userdrop button .ic{width:17px;text-align:center;opacity:.9}
+.userdrop button.danger:hover{color:#FDA4AF}
+.userdrop hr{border:0;border-top:1px solid var(--border2);margin:5px 4px}
+.userdrop .who2{padding:8px 11px 6px;border-bottom:1px solid var(--border2);margin-bottom:4px}
+.userdrop .who2 b{display:block;color:#fff;font-size:.86rem}.userdrop .who2 span{font-size:.72rem;color:var(--muted2)}
+@media(max-width:920px){.apphead{margin:-58px 0 16px;padding:10px 8px 10px 60px}}
+@media(max-width:560px){.apphead .grenet{display:none}.userchip .uc-txt{display:none}}
+/* ===== Tela de bloqueio ===== */
+.lockovl{position:fixed;inset:0;z-index:950;background:radial-gradient(120% 90% at 85% -10%,var(--soft),transparent 55%),var(--bg);display:flex;align-items:center;justify-content:center;padding:22px}
+.lockovl .lbox{width:100%;max-width:360px;text-align:center;background:rgba(20,20,22,.9);border:1px solid var(--border);border-radius:16px;padding:28px 24px;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.lockovl .lav{width:64px;height:64px;border-radius:50%;background:var(--grad-135);display:flex;align-items:center;justify-content:center;color:var(--on-accent);font-weight:800;font-size:1.35rem;margin:0 auto 12px}
+.lockovl h2{font-family:var(--font-display);color:#fff;font-size:1.15rem;margin-bottom:2px}.lockovl p{color:var(--muted);font-size:.85rem;margin-bottom:16px}
+.lockovl input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:#fff;font:inherit;margin-bottom:10px}
+.lockovl input:focus{outline:0;border-color:var(--blue-l);box-shadow:0 0 0 3px var(--soft)}
+.lockovl .enter{width:100%;background:var(--grad);color:var(--on-accent);border:0;border-radius:10px;padding:12px;font:inherit;font-weight:800;cursor:pointer}
+.lockovl .lerr{color:#FCA5A5;font-size:.8rem;min-height:16px;margin:2px 0}
+.lockovl .llink{background:none;border:0;color:var(--muted2);font:inherit;font-size:.78rem;cursor:pointer;margin-top:10px}.lockovl .llink:hover{color:var(--text)}
+/* ===== Gráficos do dashboard (SVG puro) ===== */
+.charts{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+.chartcard{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+.chartcard h2{font-size:.98rem;font-weight:800;color:#fff;margin-bottom:2px}.chartcard .csub{font-size:.8rem;color:var(--muted);margin-bottom:12px}
+.chartcard svg{display:block;width:100%;height:auto;overflow:visible;font-family:var(--font)}
+.chartcard .donutrow{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.76rem;color:var(--muted)}
+.leg span{display:inline-flex;align-items:center;gap:6px}.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media(max-width:920px){.charts{grid-template-columns:1fr}}
+/* ===== Ações rápidas do card de venda (barra inferior, sempre visível) ===== */
+.pcard .qa{display:flex;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border2)}
+.qa button{flex:1;border:0;border-radius:7px;cursor:pointer;font-size:.73rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 6px;min-height:33px}
+/* ===== Bem-estar: switch + lembretes flutuantes ===== */
+.bemSw{position:relative;display:inline-block;width:44px;height:25px;flex:none}.bemSw input{display:none}
+.bemSw span{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:.2s;cursor:pointer}
+.bemSw span:before{content:"";position:absolute;width:19px;height:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.bemSw input:checked+span{background:var(--ok)}.bemSw input:checked+span:before{transform:translateX(19px)}
+#bemWrap{position:fixed;left:20px;bottom:20px;z-index:75;display:flex;flex-direction:column;gap:10px;max-width:330px}
+@media(max-width:560px){#bemWrap{left:10px;right:10px;bottom:80px;max-width:none}}
+.bemT{background:rgba(26,26,30,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:13px;padding:12px 14px;color:var(--text);box-shadow:0 18px 40px rgba(0,0,0,.45);animation:bemIn .3s ease}
+@keyframes bemIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.bemT.out{animation:bemOut .3s ease forwards}@keyframes bemOut{to{opacity:0;transform:translateX(-20px)}}
+.bemT .h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.82rem;margin-bottom:4px;color:#fff}
+.bemT .m{font-size:.85rem;line-height:1.45;color:var(--muted)}
+.bemT .b{display:flex;gap:8px;margin-top:10px}
+.bemT .b button{flex:1;font-size:.76rem;font-weight:700;border-radius:8px;padding:7px 9px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text)}
+.bemT .b button.ok{background:var(--grad);border-color:transparent;color:var(--on-accent)}
+.bemPop{position:fixed;left:50%;top:26%;transform:translateX(-50%);z-index:200;background:rgba(26,26,30,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-top:4px solid var(--ok);border-radius:18px;padding:22px 26px;text-align:center;box-shadow:0 26px 64px rgba(0,0,0,.5);max-width:300px;cursor:pointer;animation:bemIn .34s cubic-bezier(.2,.9,.3,1.5)}
+.bemPop.adi{border-top-color:var(--blue)}
+.bemPop .e{font-size:2.4rem;margin-bottom:6px;line-height:1}.bemPop .m{color:#fff;font-size:.96rem;font-weight:600;line-height:1.45}
+.bemPop.out{animation:bemOut .3s ease forwards}
 </style>
 </head>
 <body>
@@ -249,11 +310,31 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
     <div class="navsec">Operação da empresa</div>
     <nav class="menu" id="menu2"></nav>
     <div class="side-foot">
-      <div class="who"><div class="avatar" id="uAv">—</div><div><b id="uNome">—</b><span id="uPapel" style="font-size:.72rem;color:var(--muted2)"></span></div></div>
-      <button class="logout" onclick="APP.logout()">Sair</button>
+      <div style="display:flex;align-items:center;gap:7px;opacity:.85"><img src="elite-symbol.png" alt="" style="height:16px;animation:none"><span style="font-size:.7rem;color:var(--muted2)">Tecnologia <b style="color:var(--muted);font-weight:700">VIZIO</b></span></div>
     </div>
   </aside>
-  <main><div id="view"></div>
+  <main>
+    <header class="apphead">
+      <div class="grenet" id="grenet"></div>
+      <div class="sp"></div>
+      <div class="usermenu" id="usermenu">
+        <button class="userchip" onclick="APP.toggleUserMenu()" aria-haspopup="true" aria-expanded="false" aria-label="Menu do usuário">
+          <span class="avatar" id="uAv2">—</span>
+          <span class="uc-txt"><b id="uNome2">—</b><span id="uPapel2"></span></span>
+          <span class="uc-caret" aria-hidden="true">▼</span>
+        </button>
+        <div class="userdrop" id="userdrop" role="menu">
+          <div class="who2"><b id="uNome3">—</b><span id="uEmail3"></span></div>
+          <button role="menuitem" onclick="APP.editarPerfil()"><span class="ic">👤</span>Editar perfil</button>
+          <button role="menuitem" onclick="APP.editarFoto()"><span class="ic">🖼️</span>Foto do perfil</button>
+          <button role="menuitem" onclick="APP.trocarSenha()"><span class="ic">🔑</span>Alterar senha</button>
+          <button role="menuitem" onclick="APP.bloquear()"><span class="ic">🔒</span>Bloquear o sistema</button>
+          <hr>
+          <button role="menuitem" class="danger" onclick="APP.logout()"><span class="ic">↩</span>Sair</button>
+        </div>
+      </div>
+    </header>
+    <div id="view"></div>
     <div style="margin-top:28px;padding-top:14px;border-top:1px solid var(--border2);color:var(--muted2);font-size:.76rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <span>Elite Consultoria e Consórcios · Cockpit</span><span><b style="color:var(--muted)">Tecnologia VIZIO · INPERSON</b></span>
     </div>
@@ -334,6 +415,55 @@ window.APP=(function(){
   function topbar(t,p,btn){return '<div class="topbar"><div><h1>'+t+'</h1><p>'+p+'</p></div>'+(btn||"")+'</div>';}
   function kpi(l,val,s,cls){return '<div class="kpi '+(cls||"")+'"><div class="lab">'+l+'</div><div class="val num">'+val+'</div><div class="sub">'+(s||"")+'</div></div>';}
 
+  /* ================= MINI-GRÁFICOS (SVG puro — sem libs, CSP-safe) ================= */
+  function fmtK(n){n=Number(n)||0;var a=Math.abs(n);if(a>=1e6)return (n/1e6).toFixed(a%1e6?1:0)+"M";if(a>=1e3)return Math.round(n/1e3)+"k";return String(Math.round(n));}
+  var _MES3=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  function mesLabel(ym){var p=String(ym).split("-");return (_MES3[Number(p[1])-1]||"")+"/"+String(p[0]).slice(2);}
+  function ultimosMeses(n){var out=[],d=new Date();for(var i=n-1;i>=0;i--){var x=new Date(d.getFullYear(),d.getMonth()-i,1);out.push(x.getFullYear()+"-"+("0"+(x.getMonth()+1)).slice(-2));}return out;}
+  function chartArea(labels,vals){
+    var W=520,H=176,padL=42,padR=12,padT=14,padB=28,iw=W-padL-padR,ih=H-padT-padB;
+    var max=Math.max.apply(null,vals.concat([1])),n=vals.length;
+    var x=function(i){return padL+(n<=1?iw/2:i*iw/(n-1));},y=function(v){return padT+ih-(v/max)*ih;};
+    var pts=vals.map(function(v,i){return x(i).toFixed(1)+","+y(v).toFixed(1);});
+    var area="M"+x(0).toFixed(1)+","+(padT+ih)+" L"+pts.join(" L")+" L"+x(n-1).toFixed(1)+","+(padT+ih)+" Z";
+    var grid="";for(var g=0;g<=2;g++){var gy=padT+ih-(g/2)*ih;grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="var(--border2)" stroke-width="1"/><text x="'+(padL-6)+'" y="'+(gy+3)+'" text-anchor="end" font-size="9" fill="var(--muted2)">'+fmtK(max*g/2)+'</text>';}
+    var dots=vals.map(function(v,i){return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3" fill="var(--blue-l)"/>';}).join("");
+    var xl=labels.map(function(l,i){return '<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9" fill="var(--muted2)">'+esc(l)+'</text>';}).join("");
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Evolução de crédito vendido">'+
+      '<defs><linearGradient id="cgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--blue);stop-opacity:.34"/><stop offset="1" style="stop-color:var(--blue);stop-opacity:0"/></linearGradient></defs>'+
+      grid+'<path d="'+area+'" fill="url(#cgA)"/><path d="M'+pts.join(" L")+'" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+xl+'</svg>';
+  }
+  function chartFunnel(items){
+    var max=Math.max.apply(null,items.map(function(i){return i.count;}).concat([1]));
+    var rowH=30,W=520,pad=4,barX=112,barW=W-barX-96,H=items.length*rowH+pad*2;
+    var rows=items.map(function(it,i){var yy=pad+i*rowH,w=Math.max(2,(it.count/max)*barW);
+      return '<text x="0" y="'+(yy+19)+'" font-size="11" fill="var(--muted)">'+esc(it.lab)+'</text>'+
+        '<rect x="'+barX+'" y="'+(yy+6)+'" width="'+barW+'" height="17" rx="4" fill="var(--border)"/>'+
+        '<rect x="'+barX+'" y="'+(yy+6)+'" width="'+w.toFixed(1)+'" height="17" rx="4" fill="var(--blue)"/>'+
+        '<text x="'+(barX+barW+7)+'" y="'+(yy+19)+'" font-size="10.5" fill="var(--text)">'+it.count+' · '+fmtK(it.val)+'</text>';
+    }).join("");
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Funil por estágio">'+rows+'</svg>';
+  }
+  function chartDonut(segs,centerLab,centerVal){
+    var total=segs.reduce(function(s,x){return s+(x.val||0);},0)||1,cx=70,cy=70,r=54,sw=20,C=2*Math.PI*r,off=0;
+    var arcs=segs.map(function(s){var len=(s.val||0)/total*C;var el='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';off+=len;return el;}).join("");
+    return '<svg viewBox="0 0 140 140" style="max-width:150px;flex:none" role="img" aria-label="Situação das parcelas">'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--border2)" stroke-width="'+sw+'"/>'+arcs+
+      '<text x="70" y="67" text-anchor="middle" font-size="21" font-weight="800" fill="#fff">'+centerVal+'</text>'+
+      '<text x="70" y="85" text-anchor="middle" font-size="9" fill="var(--muted2)">'+esc(centerLab)+'</text></svg>';
+  }
+  function chartBars2(labels,a,b){
+    var W=520,H=176,padL=40,padR=10,padT=14,padB=28,iw=W-padL-padR,ih=H-padT-padB;
+    var max=Math.max.apply(null,a.concat(b).concat([1])),n=labels.length,gw=iw/n,bw=Math.min(15,gw/3.2);
+    var y=function(v){return padT+ih-(v/max)*ih;},bars="";
+    for(var i=0;i<n;i++){var gx=padL+i*gw+gw/2;
+      bars+='<rect x="'+(gx-bw-2).toFixed(1)+'" y="'+y(a[i]).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(padT+ih-y(a[i])).toFixed(1)+'" rx="3" fill="var(--blue)"/>';
+      bars+='<rect x="'+(gx+2).toFixed(1)+'" y="'+y(b[i]).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(padT+ih-y(b[i])).toFixed(1)+'" rx="3" fill="#7A766E"/>';
+      bars+='<text x="'+gx.toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9" fill="var(--muted2)">'+esc(labels[i])+'</text>';}
+    var grid="";for(var g=0;g<=2;g++){var gy=padT+ih-(g/2)*ih;grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="var(--border2)"/><text x="'+(padL-5)+'" y="'+(gy+3)+'" text-anchor="end" font-size="9" fill="var(--muted2)">'+fmtK(max*g/2)+'</text>';}
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Receita versus despesa">'+grid+bars+'</svg>';
+  }
+
   /* ================= DASHBOARD ================= */
   function mes(d){return String(d||"").slice(0,7);}
   function renderDashboard(){
@@ -358,6 +488,17 @@ window.APP=(function(){
         '<button class="btn ghost" onclick="APP.go(\'vendas\')">Abrir o funil de vendas</button>'+
         '<button class="btn ghost" onclick="APP.go(\'equipe\')">Definir a meta do mês</button>'+
       '</div></div>'):"";
+    // ---- séries para os gráficos (dados reais da conta) ----
+    var m6=ultimosMeses(6), mLabels=m6.map(mesLabel);
+    var credSerie=m6.map(function(ym){return S.vendas.filter(function(x){return x.etapa==="fechado"&&mes(x.data_fechamento)===ym;}).reduce(function(s,x){return s+(+x.valor_credito||0);},0);});
+    var funnelItems=ETAPAS.filter(function(e){return e[0]!=="perdido";}).map(function(e){var it=S.vendas.filter(function(x){return x.etapa===e[0];});return {lab:e[1],count:it.length,val:it.reduce(function(s,x){return s+(+x.valor_credito||0);},0)};});
+    var hj0=today();
+    var pPagas=(S.parcelas||[]).filter(function(p){return p.quitado||p.status==="pago";}).length;
+    var pAtraso=(S.parcelas||[]).filter(function(p){return !(p.quitado||p.status==="pago")&&p.vencimento&&String(p.vencimento).slice(0,10)<hj0;}).length;
+    var pFuturas=Math.max(0,(S.parcelas||[]).length-pPagas-pAtraso);
+    var recSerie=m6.map(function(ym){var com=S.vendas.filter(function(x){return x.etapa==="fechado"&&mes(x.data_fechamento)===ym;}).reduce(function(s,x){return s+(+x.comissao||0);},0);var rl=S.lancamentos.filter(function(l){return l.tipo==="receita"&&mes(l.data)===ym;}).reduce(function(s,l){return s+(+l.valor||0);},0);return com+rl;});
+    var despSerie=m6.map(function(ym){return S.lancamentos.filter(function(l){return l.tipo==="despesa"&&mes(l.data)===ym;}).reduce(function(s,l){return s+(+l.valor||0);},0);});
+    var temParcelas=(S.parcelas||[]).length>0;
     view.innerHTML=topbar("Dashboard","Visão de decisão — "+new Date().toLocaleDateString("pt-BR",{month:"long",year:"numeric"})+".","")+
       onboard+
       '<div class="kpis">'+
@@ -365,6 +506,19 @@ window.APP=(function(){
         kpi("Pipeline aberto",BRL(pipeValor),pipeAberto.length+" oportunidade(s)","")+
         kpi("Clientes ativos",n0(S.clientes.length),ativos.length+" contrato(s) ativos","")+
         kpi("Resultado do mês",BRL(recMes-despMes),"rec "+BRL(recMes)+" · desp "+BRL(despMes),"")+
+      '</div>'+
+      '<div class="charts">'+
+        '<div class="chartcard"><h2>Crédito vendido</h2><div class="csub">Evolução dos últimos 6 meses.</div>'+chartArea(mLabels,credSerie)+'</div>'+
+        '<div class="chartcard"><h2>Funil por estágio</h2><div class="csub">Oportunidades em cada fase.</div>'+chartFunnel(funnelItems)+'</div>'+
+        '<div class="chartcard"><h2>Parcelas da carteira</h2><div class="csub">Em dia, a vencer e em atraso.</div>'+
+          (temParcelas?'<div class="donutrow">'+chartDonut([{lab:"parcelas",val:pPagas,color:"var(--ok)"},{lab:"a vencer",val:pFuturas,color:"var(--blue)"},{lab:"atraso",val:pAtraso,color:"var(--rose)"}],"parcelas",n0(pPagas+pFuturas+pAtraso))+
+            '<div class="leg" style="flex-direction:column;gap:9px;margin-top:0">'+
+              '<span><i style="background:var(--ok)"></i>Em dia — <b style="color:#fff;margin-left:3px">'+pPagas+'</b></span>'+
+              '<span><i style="background:var(--blue)"></i>A vencer — <b style="color:#fff;margin-left:3px">'+pFuturas+'</b></span>'+
+              '<span><i style="background:var(--rose)"></i>Em atraso — <b style="color:#fff;margin-left:3px">'+pAtraso+'</b></span>'+
+            '</div></div>':'<div class="empty">Nenhuma parcela gerada ainda. Gere o cronograma em <b>Contratos</b>.</div>')+'</div>'+
+        '<div class="chartcard"><h2>Receita × Despesa</h2><div class="csub">Resultado dos últimos 6 meses (DRE).</div>'+chartBars2(mLabels,recSerie,despSerie)+
+          '<div class="leg"><span><i style="background:var(--blue)"></i>Receita</span><span><i style="background:#7A766E"></i>Despesa</span></div></div>'+
       '</div>'+
       '<div class="grid2"><div>'+
         '<div class="card"><h2>Meta do mês</h2><div class="csub">Crédito vendido vs. meta.</div>'+
@@ -658,12 +812,13 @@ window.APP=(function(){
   function cardVenda(x){
     var prob=probDe(x);
     var qa=(x.etapa!=="fechado"&&x.etapa!=="perdido")
-      ? '<div class="qa"><button class="win" title="Marcar ganho" onclick="event.stopPropagation();APP.ganhar(\''+x.id+'\')">✓</button><button class="lose" title="Marcar perdido" onclick="event.stopPropagation();APP.perder(\''+x.id+'\')">✕</button></div>'
-      : (x.etapa==="fechado"?'<div class="qa"><button class="win" title="Gerar contrato" onclick="event.stopPropagation();APP.gerarContrato(\''+x.id+'\')">📄</button></div>':"");
-    return '<div class="pcard" draggable="true" ondragstart="APP.dragStart(event,\''+x.id+'\')" ondragend="APP.dragEnd(event)" onclick="APP.formVenda(\''+x.id+'\')">'+qa+
+      ? '<div class="qa"><button class="win" title="Marcar como ganho" onclick="event.stopPropagation();APP.ganhar(\''+x.id+'\')">✓ Ganho</button><button class="lose" title="Marcar como perdido" onclick="event.stopPropagation();APP.perder(\''+x.id+'\')">✕ Perdido</button></div>'
+      : (x.etapa==="fechado"?'<div class="qa"><button class="doc" title="Gerar contrato" onclick="event.stopPropagation();APP.gerarContrato(\''+x.id+'\')">📄 Gerar contrato</button></div>':"");
+    return '<div class="pcard" draggable="true" ondragstart="APP.dragStart(event,\''+x.id+'\')" ondragend="APP.dragEnd(event)" onclick="APP.formVenda(\''+x.id+'\')">'+
       '<div class="ptop"><b>'+esc(x.titulo||clienteNome(x.cliente_id))+'</b></div>'+
       '<div class="pmeta"><span class="pval">'+BRL(x.valor_credito)+'</span><span class="prob">'+prob+'%</span></div>'+
       '<div style="display:flex;align-items:center;gap:6px;margin-top:7px"><span class="avatar-s" style="width:20px;height:20px;font-size:.6rem">'+ini(memberNome(x.consultor_id))+'</span><span style="color:var(--muted2);font-size:.72rem">'+esc(memberNome(x.consultor_id))+(x.proxima_data?(' · ⏰ '+dBR(x.proxima_data)):"")+'</span></div>'+
+      qa+
       '</div>';
   }
   function qv(x){S._qv=x;renderPipe();}
@@ -1362,12 +1517,49 @@ window.APP=(function(){
   }
 
   /* ================= BEM-ESTAR & PAUSAS ================= */
+  /* Motor de lembretes inteligentes (localStorage por dispositivo, padrão Inovar) */
+  var BEM_KEY="cs_bemestar_prefs_v1";
+  var BEM_TP={
+    agua:{nome:"Hidratação",e:"💧",intervalo:60,msgs:["Hora do gole! Beba um pouco de água para manter o foco.","Seu cérebro precisa de combustível — que tal um copo d'água agora?","Hidratação em dia, mente leve. 💧"]},
+    movimento:{nome:"Movimento & Postura",e:"🪑",intervalo:120,msgs:["Levante e estique as pernas por 1 minuto.","Alinhe a postura: gire os ombros para trás e relaxe o pescoço.","Entrelace os dedos e empurre as mãos para o teto."]},
+    visual:{nome:"Descanso visual (20-20-20)",e:"👁️",intervalo:40,msgs:["Olhe para algo distante por 20 segundos.","Pisque algumas vezes e mude o foco da tela por um instante."]},
+    mental:{nome:"Respiro mental",e:"🧠",intervalo:90,msgs:["Inspire fundo… segure… e expire devagar.","Pense em três coisas boas do seu dia de hoje.","Feche os olhos por 30s e apenas escute os sons ao redor."]}
+  };
+  var BEM_ORD=["agua","movimento","visual","mental"], BEM_STATE={}, _bemTimer=null;
+  function bemDef(){var t={};BEM_ORD.forEach(function(k){t[k]={on:true,intervalo:BEM_TP[k].intervalo};});return {master:true,tipos:t};}
+  function bemLoad(){try{var s=JSON.parse(localStorage.getItem(BEM_KEY)||"null");if(s&&s.tipos){BEM_ORD.forEach(function(k){if(!s.tipos[k])s.tipos[k]={on:true,intervalo:BEM_TP[k].intervalo};});return s;}}catch(e){}return bemDef();}
+  function bemSave(p){try{localStorage.setItem(BEM_KEY,JSON.stringify(p));}catch(e){}}
+  function bemReprog(){var p=bemLoad(),now=Date.now();BEM_ORD.forEach(function(k){if(p.master&&p.tipos[k]&&p.tipos[k].on){if(!BEM_STATE[k])BEM_STATE[k]=now+(p.tipos[k].intervalo||BEM_TP[k].intervalo)*6e4;}else BEM_STATE[k]=null;});}
+  function bemTick(){var p=bemLoad();if(!p.master)return;var now=Date.now();BEM_ORD.forEach(function(k){if(!(p.tipos[k]&&p.tipos[k].on)){BEM_STATE[k]=null;return;}if(!BEM_STATE[k]){BEM_STATE[k]=now+(p.tipos[k].intervalo||BEM_TP[k].intervalo)*6e4;return;}if(now>=BEM_STATE[k]){bemToast(k);BEM_STATE[k]=now+(p.tipos[k].intervalo||BEM_TP[k].intervalo)*6e4;}});}
+  function bemWrap(){var w=document.getElementById("bemWrap");if(!w){w=document.createElement("div");w.id="bemWrap";document.body.appendChild(w);}return w;}
+  var BEM_REC=["Boa! Seu corpo agradece. 🎉","Mandou bem — pequenas pausas, grandes resultados. 💪","Isso! Você está cuidando de você. 🌟","Feito! Mente renovada para seguir. ☕"];
+  var BEM_ADI=["Sem problema, te lembro em 5 minutos. 💛","Tudo bem, sua tarefa vem primeiro. Volto já. 🙂","Respeito seu foco. Até já! 🌿"];
+  function bemCeleb(tipo){var arr=tipo==="adiar"?BEM_ADI:BEM_REC,msg=arr[Math.floor(Math.random()*arr.length)];var el=document.createElement("div");el.className="bemPop "+(tipo==="adiar"?"adi":"");el.innerHTML='<div class="e">'+(tipo==="adiar"?"⏰":"🎉")+'</div><div class="m">'+msg+'</div>';document.body.appendChild(el);var rem=function(){if(!el.parentNode)return;el.classList.add("out");setTimeout(function(){el.remove();},300);};el.onclick=rem;setTimeout(rem,tipo==="adiar"?2500:3000);}
+  function bemToast(tipo){var t=BEM_TP[tipo];if(!t)return;var msg=t.msgs[Math.floor(Math.random()*t.msgs.length)];var el=document.createElement("div");el.className="bemT";el.innerHTML='<div class="h"><span>'+t.e+'</span>'+esc(t.nome)+'</div><div class="m">'+esc(msg)+'</div><div class="b"><button class="snooze">⏰ Adiar 5 min</button><button class="ok">Feito 👍</button></div>';bemWrap().appendChild(el);var rem=function(){el.classList.add("out");setTimeout(function(){el.remove();},320);};el.querySelector(".ok").onclick=function(){rem();bemCeleb("feito");};el.querySelector(".snooze").onclick=function(){BEM_STATE[tipo]=Date.now()+3e5;rem();bemCeleb("adiar");};setTimeout(function(){if(el.parentNode)rem();},22000);}
+  function bemMaster(b){var p=bemLoad();p.master=!!b;bemSave(p);BEM_STATE={};bemReprog();renderBemestar();}
+  function bemToggle(k,b){var p=bemLoad();p.tipos[k].on=!!b;bemSave(p);BEM_STATE[k]=null;bemReprog();}
+  function bemSetInt(k,m){var p=bemLoad();p.tipos[k].intervalo=Number(m)||BEM_TP[k].intervalo;bemSave(p);BEM_STATE[k]=null;bemReprog();}
+  function bemTestar(){var p=bemLoad();var ks=BEM_ORD.filter(function(k){return p.tipos[k].on;});bemToast(ks[Math.floor(Math.random()*ks.length)]||"agua");}
+  function bemBoot(){bemReprog();if(!_bemTimer)_bemTimer=setInterval(bemTick,60000);}
   function renderBemestar(){
     var minhas=S.pausas.filter(function(p){return p.user_id===UID;});
     var hoje=minhas.filter(function(p){return String(p.inicio).slice(0,10)===today();});
     var abertaId=(hoje.find(function(p){return !p.fim;})||{}).id;
+    var pr=bemLoad(), INTS=[15,20,30,40,45,60,90,120,180];
+    function selInt(k){return '<select onchange="APP.bemSetInt(\''+k+'\',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:#fff;font:inherit;font-size:.82rem">'+INTS.map(function(m){return '<option value="'+m+'"'+(Number(pr.tipos[k].intervalo)===m?" selected":"")+'>a cada '+(m<60?m+" min":(m/60)+"h"+(m%60?" "+(m%60)+"min":""))+'</option>';}).join("")+'</select>';}
+    var linhas=BEM_ORD.map(function(k){var t=BEM_TP[k],on=pr.tipos[k].on;return '<div style="display:flex;align-items:center;gap:13px;padding:12px 2px;border-bottom:1px solid var(--border2)">'+
+      '<div style="width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:var(--surface2)">'+t.e+'</div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;color:#fff;font-size:.9rem">'+esc(t.nome)+'</div><div style="font-size:.78rem;color:var(--muted)">'+esc(t.msgs[0])+'</div></div>'+
+      selInt(k)+'<label class="bemSw"><input type="checkbox" '+(on?"checked":"")+' onchange="APP.bemToggle(\''+k+'\',this.checked)"><span></span></label></div>';}).join("");
     document.getElementById("view").innerHTML=topbar("Bem-estar & Pausas","Você passa o dia sentado atendendo — cuide do corpo e da mente.","")+
-      '<div class="kpis">'+kpi("Pausas hoje",hoje.length,"registradas","accent")+kpi("Sugestão","a cada 50min","levante e alongue","")+kpi("Hidratação","💧","beba água","")+kpi("Descanso visual","20-20-20","20s a cada 20min","")+'</div>'+
+      '<div class="kpis">'+kpi("Pausas hoje",hoje.length,"registradas","accent")+kpi("Lembretes",pr.master?"ativos":"pausados","no canto da tela","")+kpi("Hidratação","💧","beba água","")+kpi("Descanso visual","20-20-20","20s a cada 20min","")+'</div>'+
+      '<div class="card" style="display:flex;align-items:center;gap:16px">'+
+        '<div style="width:52px;height:52px;border-radius:14px;background:var(--grad-135);display:flex;align-items:center;justify-content:center;font-size:1.7rem">🌿</div>'+
+        '<div style="flex:1"><h2 style="margin:0">Lembretes inteligentes</h2><div class="csub" style="margin:0">Avisos amigáveis para você cuidar de si durante o trabalho. Não interrompem o que você faz — aparecem discretamente no canto da tela.</div></div>'+
+        '<label class="bemSw" style="transform:scale(1.15)"><input type="checkbox" '+(pr.master?"checked":"")+' onchange="APP.bemMaster(this.checked)"><span></span></label>'+
+      '</div>'+
+      '<div class="card"><h2>Tipos de lembrete &amp; frequência</h2><div class="csub">Ajuste o que faz sentido para o seu dia. Salvo neste aparelho.</div>'+linhas+
+        '<div style="margin-top:13px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn ghost sm" onclick="APP.bemTestar()">🔔 Testar um lembrete agora</button><span style="font-size:.78rem;color:var(--muted2)">Suas preferências ficam salvas neste dispositivo.</span></div></div>'+
       '<div class="grid2"><div class="card"><h2>Registrar pausa agora</h2><div class="csub">Um clique cuida de você e mede seu ritmo.</div>'+
         '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
         ["pausa","alongamento","agua","descanso","almoco"].map(function(t){var lbl={pausa:"☕ Pausa",alongamento:"🧘 Alongar",agua:"💧 Água",descanso:"👀 Descanso",almoco:"🍽️ Almoço"}[t];return '<button class="btn ghost" onclick="APP.pausa(\''+t+'\')">'+lbl+'</button>';}).join("")+
@@ -1409,18 +1601,87 @@ window.APP=(function(){
   function closeModal(){var o=document.getElementById("mOvl");if(o){if(o._esc)document.removeEventListener("keydown",o._esc);o.remove();}}
 
   /* ---------- auth + boot ---------- */
+  /* ---------- módulo de usuário (topo-direito, padrão Inovar) ---------- */
+  function toggleUserMenu(force){
+    var m=document.getElementById("usermenu");if(!m)return;
+    var open=(typeof force==="boolean")?force:!m.classList.contains("open");
+    m.classList.toggle("open",open);
+    var b=m.querySelector(".userchip");if(b)b.setAttribute("aria-expanded",open?"true":"false");
+    if(open){setTimeout(function(){document.addEventListener("click",_umClose);},0);}
+    else document.removeEventListener("click",_umClose);
+  }
+  function _umClose(e){var m=document.getElementById("usermenu");if(m&&!m.contains(e.target))toggleUserMenu(false);}
+  function editarPerfil(){
+    toggleUserMenu(false);var m=S.member||{};
+    modal("Editar perfil",
+      '<div class="field"><label>Seu nome</label><input id="pf_nome" value="'+esc(m.nome||"")+'"></div>'+
+      '<div class="fgrid"><div class="field"><label>E-mail de acesso</label><input value="'+esc(S.user.email||"")+'" readonly style="opacity:.65"></div>'+
+      '<div class="field"><label>Papel</label><input value="'+esc(m.papel||"")+'" readonly style="opacity:.65"></div></div>',
+      function(){var nm=v("pf_nome").trim();if(!nm){toast("Informe seu nome.","warn");return false;}
+        SB.from("co_members").update({nome:nm}).eq("id",m.id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}S.member.nome=nm;var mm=S.members.find(function(x){return x.id===m.id;});if(mm)mm.nome=nm;paintUser();closeModal();toast("Perfil atualizado.","ok");});
+        return false;});
+  }
+  function editarFoto(){
+    toggleUserMenu(false);var m=S.member||{};
+    modal("Foto do perfil",
+      '<div class="csub" style="margin-bottom:11px;color:var(--muted);font-size:.82rem">Cole o endereço (URL) de uma imagem. O envio de arquivo do próprio dispositivo chega em breve.</div>'+
+      '<div class="field"><label>URL da imagem</label><input id="pf_foto" placeholder="https://..." value="'+esc(m.foto_url||"")+'"></div>',
+      function(){var url=v("pf_foto").trim();
+        SB.from("co_members").update({foto_url:url||null}).eq("id",m.id).then(function(r){if(r.error){toast("Não foi possível salvar a foto: "+r.error.message,"danger");return;}S.member.foto_url=url;paintUser();closeModal();toast(url?"Foto atualizada.":"Foto removida.","ok");});
+        return false;},
+      (m.foto_url?'<button class="btn ghost" onclick="var e=document.getElementById(\'pf_foto\');if(e)e.value=\'\'">Remover foto</button>':""));
+  }
+  function trocarSenha(){
+    toggleUserMenu(false);
+    modal("Alterar senha",
+      '<div class="field"><label>Nova senha (mín. 6)</label><input id="ts_p1" type="password" autocomplete="new-password" placeholder="••••••••"></div>'+
+      '<div class="field"><label>Repita a nova senha</label><input id="ts_p2" type="password" autocomplete="new-password" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')document.getElementById(\'mSave\').click()"></div>',
+      function(){var p=v("ts_p1"),p2=v("ts_p2");
+        if(!p||p.length<6){toast("A senha precisa de no mínimo 6 caracteres.","warn");return false;}
+        if(p!==p2){toast("As senhas não conferem.","warn");return false;}
+        SB.auth.updateUser({password:p}).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}closeModal();toast("Senha alterada com sucesso.","ok");});
+        return false;});
+  }
+  function bloquear(){
+    toggleUserMenu(false);var nm=S.member.nome||S.user.email;
+    if(document.getElementById("lockovl"))return;
+    var ovl=document.createElement("div");ovl.className="lockovl";ovl.id="lockovl";
+    ovl.innerHTML='<div class="lbox"><div class="lav">'+esc(ini(nm))+'</div><h2>Sistema bloqueado</h2><p>'+esc(nm)+'</p>'+
+      '<input type="password" id="lk_pass" autocomplete="current-password" placeholder="Sua senha para desbloquear" onkeydown="if(event.key===\'Enter\')APP.desbloquear()">'+
+      '<div class="lerr" id="lk_err"></div><button class="enter" onclick="APP.desbloquear()">Desbloquear</button>'+
+      '<button class="llink" onclick="APP.logout()">Sair da conta</button></div>';
+    document.body.appendChild(ovl);var i=document.getElementById("lk_pass");if(i)i.focus();
+  }
+  function desbloquear(){
+    var err=document.getElementById("lk_err");var p=v("lk_pass");
+    if(!p){if(err)err.textContent="Digite sua senha.";return;}
+    if(err)err.textContent="Verificando…";
+    SB.auth.signInWithPassword({email:S.user.email,password:p}).then(function(r){
+      if(r.error){if(err)err.textContent="Senha incorreta.";return;}
+      var o=document.getElementById("lockovl");if(o)o.remove();
+    });
+  }
+  function avatarBg(el,nm){
+    var url=(S.member&&S.member.foto_url)||"";
+    if(url){el.textContent="";el.style.backgroundImage="url(\""+String(url).replace(/"/g,"%22")+"\")";el.style.backgroundSize="cover";el.style.backgroundPosition="center";}
+    else{el.style.backgroundImage="";el.textContent=ini(nm);}
+  }
   function paintUser(){
     document.getElementById("orgNome").textContent=(S.config&&S.config.nome_empresa)||S.org.nome;
     document.getElementById("orgPlano").textContent="plano "+(S.org.plano||"trial");
     var nm=S.member.nome||S.user.email;
-    document.getElementById("uNome").textContent=nm;
-    document.getElementById("uAv").textContent=ini(nm);
-    document.getElementById("uPapel").textContent=S.member.papel;
+    var first=String(nm).trim().split(/\s+/)[0];
+    var g=document.getElementById("grenet");if(g)g.innerHTML="Olá, <b>"+esc(first)+"</b> 👋";
+    document.getElementById("uNome2").textContent=nm;
+    document.getElementById("uPapel2").textContent=S.member.papel||"";
+    document.getElementById("uNome3").textContent=nm;
+    document.getElementById("uEmail3").textContent=S.user.email||"";
+    avatarBg(document.getElementById("uAv2"),nm);
   }
   function startApp(){
     document.getElementById("login").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    buildMenus();paintUser();go("dashboard");
+    buildMenus();paintUser();go("dashboard");bemBoot();
   }
   function afterAuth(user){
     UID=user.id;S.user=user;
@@ -1508,6 +1769,7 @@ window.APP=(function(){
   }
 
   return {boot:boot,go:go,login:login,signup:signup,forgot:forgot,showSignup:showSignup,logout:logout,toast:toast,criarOrg:criarOrg,definirSenha:definirSenha,togglePw:togglePw,toggleNav:toggleNav,
+    toggleUserMenu:toggleUserMenu,editarPerfil:editarPerfil,editarFoto:editarFoto,trocarSenha:trocarSenha,bloquear:bloquear,desbloquear:desbloquear,
     formCliente:formCliente,delCliente:delCliente,qcli:qcli,cliFiltro:cliFiltro,abrirCli:abrirCli,voltarCli:voltarCli,
     novaInteracao:novaInteracao,addInteracaoRapida:addInteracaoRapida,delInteracao:delInteracao,editFollowup:editFollowup,
     concluirFollowup:concluirFollowup,novaVendaCli:novaVendaCli,novoContratoCli:novoContratoCli,confirmModal:confirmModal,
@@ -1522,7 +1784,7 @@ window.APP=(function(){
     agDragStart:agDragStart,agDragEnd:agDragEnd,agOver:agOver,agLeave:agLeave,agDrop:agDrop,
     agMoverDia:agMoverDia,agMoverPer:agMoverPer,
     tfDragStart:tfDragStart,tfDrop:tfDrop,tfMoverEtapa:tfMoverEtapa,formTarefa:formTarefa,delTarefa:delTarefa,
-    pausa:pausa,fimPausa:fimPausa,saveConfig:saveConfig,closeModal:closeModal};
+    pausa:pausa,fimPausa:fimPausa,bemMaster:bemMaster,bemToggle:bemToggle,bemSetInt:bemSetInt,bemTestar:bemTestar,saveConfig:saveConfig,closeModal:closeModal};
 })();
 document.addEventListener("DOMContentLoaded",APP.boot);
 if(document.readyState!=="loading")APP.boot();
@@ -1530,7 +1792,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.3';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.4';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
