@@ -5,15 +5,15 @@
       "vizio-consorcio" e a assinaturaUrl (checkout Stripe do produto Consórcio).
       A publishable key é pública por design; NÃO colocar service role key aqui. */
 const DADOS = {
-  _meta: { produto: "Gerenciador de Consórcio", instancia: "—", fonte: "Supabase", gerado: "03/07/2026" },
+  _meta: { produto: "Gerenciador de Consórcio", instancia: "Elite Consultoria e Consórcios", fonte: "Supabase", gerado: "03/07/2026" },
   _cfg: {
     produto: "Gerenciador de Consórcio",
-    instancia: "—",
+    instancia: "Elite Consultoria e Consórcios",
     propLabel: "Consorciado",
     trialDays: 0,
-    // Projeto Supabase vizio-consorcio (sa-east-1, ref pakugltmsipykvxiffdw).
-    supabaseUrl: "https://pakugltmsipykvxiffdw.supabase.co",
-    supabaseKey: "sb_publishable_AObCS9umaj_a0J_3Nu4GQw_4HSEQ36a",
+    // Projeto Supabase DEDICADO da Elite: elite-consorcio (sa-east-1, ref wcjvmgmxizhwaolyusvx).
+    supabaseUrl: "https://wcjvmgmxizhwaolyusvx.supabase.co",
+    supabaseKey: "sb_publishable_nIg3tcSJqvOy_tsaVneMNw_qbdrP7Hj",
     // TODO: link de checkout do produto "Vizio Consórcio — Mensal" (Stripe)
     assinaturaUrl: "https://buy.stripe.com/PREENCHER"
   },
