@@ -232,6 +232,37 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.76rem;color:var(--muted)}
 .leg span{display:inline-flex;align-items:center;gap:6px}.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
 @media(max-width:920px){.charts{grid-template-columns:1fr}}
+/* ===== Financeiro — barra de filtro (período/consultor/export) ===== */
+.finbar{padding:12px 16px}
+.finbar-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.finf{display:flex;flex-direction:column;gap:3px;font-size:.68rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted2);font-weight:700}
+.finf select,.finf input{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 9px;font:inherit;font-size:.86rem;text-transform:none;letter-spacing:0}
+.finf select:focus,.finf input:focus{outline:0;border-color:var(--blue-l)}
+.finf-exp{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+.finbar-cap{margin-top:9px;font-size:.76rem;color:var(--muted)}
+@media(max-width:560px){.finf-exp{margin-left:0;width:100%}.finf{width:100%}.finf select,.finf input{width:100%}}
+/* ===== Calendário mensal ===== */
+.calwrap{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 16px;margin-bottom:16px}
+.calhead{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.calhead h2{font-size:1.05rem;color:#fff;font-weight:800;margin-right:auto}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.calwd{font-size:.64rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted2);font-weight:700;text-align:center;padding:4px 0}
+.calcell{min-height:92px;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.12s;overflow:hidden}
+.calcell:hover{border-color:var(--blue-l);background:var(--surface2)}
+.calcell.out{opacity:.42}
+.calcell.hoje{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.calcell .dn{font-size:.78rem;font-weight:700;color:var(--text)}
+.calcell.hoje .dn{color:var(--blue-l)}
+.calchip{display:flex;align-items:center;gap:4px;font-size:.66rem;color:var(--text);background:var(--surface2);border-radius:5px;padding:2px 5px;line-height:1.25;overflow:hidden}
+.calchip i{width:7px;height:7px;border-radius:2px;flex:0 0 7px}
+.calchip .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calchip.more{color:var(--muted2);background:none;padding:1px 4px}
+.calleg{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:.72rem;color:var(--muted)}
+.calleg span{display:inline-flex;align-items:center;gap:5px}.calleg i{width:9px;height:9px;border-radius:2px}
+.caldsec{margin-bottom:14px}.caldsec h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted2);font-weight:700;margin-bottom:7px}
+.caldrow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border2)}.caldrow:last-child{border-bottom:0}
+.caldot{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+@media(max-width:720px){.calcell{min-height:60px;gap:2px}.calchip .lbl{display:none}.calchip{padding:2px 4px}}
 /* ===== Ações rápidas do card de venda (barra inferior, sempre visível) ===== */
 .pcard .qa{display:flex;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border2)}
 .qa button{flex:1;border:0;border-radius:7px;cursor:pointer;font-size:.73rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 6px;min-height:33px}
@@ -1325,51 +1356,126 @@ window.APP=(function(){
   /* ================= FINANCEIRO ================= */
   function conNome(cid){var c=S.contratos.find(function(x){return x.id===cid;});return c?(clienteNome(c.cliente_id)+" · "+(c.administradora||(c.tipo==="consorcio"?"Consórcio":"Financ."))):"—";}
   function mesLabel(m){var p=String(m).split("-");return p[1]+"/"+p[0].slice(2);}
+  /* ---- filtro de período + consultor (estado + faixas) ---- */
+  var FIN_PER=[["mes","Mês atual"],["mes_ant","Mês anterior"],["trim","Trimestre"],["ano","Ano"],["tudo","Tudo"],["custom","Personalizado"]];
+  function finSt(){if(!S._fin){var m=today().slice(0,7);S._fin={per:"mes",from:m+"-01",to:today(),cons:""};}return S._fin;}
+  function finRange(){var f=finSt(),d=new Date(),y=d.getFullYear(),mo=d.getMonth();
+    function iso(dt){return dt.getFullYear()+"-"+pad2(dt.getMonth()+1)+"-"+pad2(dt.getDate());}
+    if(f.per==="custom")return {from:(f.from||"1900-01-01"),to:(f.to||"2999-12-31")};
+    if(f.per==="tudo")return {from:"1900-01-01",to:"2999-12-31"};
+    if(f.per==="mes_ant")return {from:iso(new Date(y,mo-1,1)),to:iso(new Date(y,mo,0))};
+    if(f.per==="trim"){var q=Math.floor(mo/3)*3;return {from:iso(new Date(y,q,1)),to:iso(new Date(y,q+3,0))};}
+    if(f.per==="ano")return {from:y+"-01-01",to:y+"-12-31"};
+    return {from:iso(new Date(y,mo,1)),to:iso(new Date(y,mo+1,0))};}
+  function finIn(dt){var s=String(dt||"").slice(0,10);if(!s)return false;var r=finRange();return s>=r.from&&s<=r.to;}
+  function finConsVenda(v){var c=finSt().cons;return !c||v.consultor_id===c;}
+  function finContratoCons(cid){var c=finSt().cons;if(!c)return true;var ct=S.contratos.find(function(x){return x.id===cid;});return !!(ct&&ct.consultor_id===c);}
+  function finConsLanc(l){var c=finSt().cons;if(!c)return true;return l.contrato_id?finContratoCons(l.contrato_id):false;}
+  function finMeses(){var f=finSt(),to=finRange().to.slice(0,7);var n=(f.per==="ano"||f.per==="tudo")?12:6;
+    var y=+to.slice(0,4),m=+to.slice(5,7)-1,out=[];for(var i=n-1;i>=0;i--){var dd=new Date(y,m-i,1);out.push(dd.getFullYear()+"-"+pad2(dd.getMonth()+1));}return out;}
+  function finSetPer(p){finSt().per=p;renderFinanceiro();}
+  function finSetCons(c){finSt().cons=c;renderFinanceiro();}
+  function finSetFrom(val){finSt().from=val;finSt().per="custom";renderFinanceiro();}
+  function finSetTo(val){finSt().to=val;finSt().per="custom";renderFinanceiro();}
+  function baixarCSV(nome,linhas){
+    var csv=linhas.map(function(r){return r.map(function(c){c=String(c==null?"":c);return /[";\n\r]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c;}).join(";");}).join("\r\n");
+    try{var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download=nome;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(url);a.remove();},250);toast("CSV exportado.","ok");}
+    catch(_){toast("Não foi possível exportar.","danger");}}
+  function finCSVLanc(){var r=finRange(),rows=[["Data","Tipo","Categoria","Descrição","Contrato","Valor"]];
+    S.lancamentos.filter(function(l){return finIn(l.data)&&finConsLanc(l);}).sort(function(a,b){return (a.data||"").localeCompare(b.data||"");})
+     .forEach(function(l){rows.push([dBR(l.data),l.tipo,l.categoria||"",l.descricao||"",l.contrato_id?conNome(l.contrato_id):"",String(l.valor||0).replace(".",",")]);});
+    baixarCSV("financeiro_lancamentos_"+r.from+"_a_"+r.to+".csv",rows);}
+  function finCSVReceber(){var hj=today(),rows=[["Contrato","Cliente","Parcela","Vencimento","Valor","Situação"]];
+    (S.parcelas||[]).filter(function(p){return !(p.quitado||p.status==="pago")&&finContratoCons(p.contrato_id);})
+     .sort(function(a,b){return (a.vencimento||"").localeCompare(b.vencimento||"");})
+     .forEach(function(p){var venc=String(p.vencimento||"").slice(0,10),ct=S.contratos.find(function(c){return c.id===p.contrato_id;})||{};rows.push([conNome(p.contrato_id),clienteNome(ct.cliente_id),p.numero||"",dBR(venc),String(p.valor_previsto||0).replace(".",","),venc<hj?"Vencida":"A vencer"]);});
+    baixarCSV("financeiro_a_receber.csv",rows);}
+  function finCSVComissoes(){var r=finRange(),rows=[["Consultor","Negócio","Cliente","Fechamento","Crédito","Comissão"]];
+    S.vendas.filter(function(v){return v.etapa==="fechado"&&finIn(v.data_fechamento)&&finConsVenda(v);}).sort(function(a,b){return (a.data_fechamento||"").localeCompare(b.data_fechamento||"");})
+     .forEach(function(v){rows.push([memberNome(v.consultor_id),v.titulo||"",clienteNome(v.cliente_id),dBR(v.data_fechamento),String(v.valor_credito||0).replace(".",","),String(v.comissao||0).replace(".",",")]);});
+    baixarCSV("financeiro_comissoes_"+r.from+"_a_"+r.to+".csv",rows);}
   function renderFinanceiro(){
-    var mesAtual=today().slice(0,7), hj=today();
-    var recLanc=S.lancamentos.filter(function(l){return l.tipo==="receita"&&mes(l.data)===mesAtual;}).reduce(function(s,l){return s+(+l.valor||0);},0);
-    var despMes=S.lancamentos.filter(function(l){return l.tipo==="despesa"&&mes(l.data)===mesAtual;}).reduce(function(s,l){return s+(+l.valor||0);},0);
-    var comMes=S.vendas.filter(function(x){return x.etapa==="fechado"&&mes(x.data_fechamento)===mesAtual;}).reduce(function(s,x){return s+(+x.comissao||0);},0);
+    var f=finSt(), r=finRange(), hj=today();
+    var consLabel=f.cons?memberNome(f.cons):"toda a equipe";
+    var recLancL=S.lancamentos.filter(function(l){return l.tipo==="receita"&&finIn(l.data)&&finConsLanc(l);});
+    var despL=S.lancamentos.filter(function(l){return l.tipo==="despesa"&&finIn(l.data)&&finConsLanc(l);});
+    var vendasFech=S.vendas.filter(function(x){return x.etapa==="fechado"&&finIn(x.data_fechamento)&&finConsVenda(x);});
+    var recLanc=recLancL.reduce(function(s,l){return s+(+l.valor||0);},0);
+    var despMes=despL.reduce(function(s,l){return s+(+l.valor||0);},0);
+    var comMes=vendasFech.reduce(function(s,x){return s+(+x.comissao||0);},0);
     var recMes=recLanc+comMes, resultado=recMes-despMes;
-    var atrasadas=(S.parcelas||[]).filter(function(p){return !(p.quitado||p.status==="pago")&&p.vencimento&&String(p.vencimento).slice(0,10)<hj;});
+    /* parcelas em aberto (situação atual, filtrada por consultor) */
+    var abertasAll=(S.parcelas||[]).filter(function(p){return !(p.quitado||p.status==="pago")&&finContratoCons(p.contrato_id);});
+    var atrasadas=abertasAll.filter(function(p){return p.vencimento&&String(p.vencimento).slice(0,10)<hj;});
+    var aReceber=abertasAll.filter(function(p){return p.vencimento&&String(p.vencimento).slice(0,10)>=hj;});
     var atrasoTot=atrasadas.reduce(function(s,p){return s+(+p.valor_previsto||0);},0);
-    var meses=[], d=new Date();
-    for(var i=0;i<6;i++){var dd=new Date(d.getFullYear(),d.getMonth()+i,1);meses.push(dd.toISOString().slice(0,7));}
-    var serie=meses.map(function(m){return (S.parcelas||[]).filter(function(p){return !(p.quitado||p.status==="pago")&&mes(p.vencimento)===m;}).reduce(function(s,p){return s+(+p.valor_previsto||0);},0);});
-    var maxv=Math.max.apply(null,serie.concat([1]));
-    var despCat={}; S.lancamentos.filter(function(l){return l.tipo==="despesa"&&mes(l.data)===mesAtual;}).forEach(function(l){var k=l.categoria||"Outras";despCat[k]=(despCat[k]||0)+(+l.valor||0);});
+    var receberTot=aReceber.reduce(function(s,p){return s+(+p.valor_previsto||0);},0);
+    /* aging da carteira a receber */
+    function difDias(v){return Math.floor((new Date(v+"T00:00:00")-new Date(hj+"T00:00:00"))/86400000);}
+    var ag={venc:{n:0,v:0},d30:{n:0,v:0},d60:{n:0,v:0},d90:{n:0,v:0},d90p:{n:0,v:0}};
+    abertasAll.forEach(function(p){var v=String(p.vencimento||"").slice(0,10);if(!v)return;var dd=difDias(v),val=+p.valor_previsto||0,b=dd<0?"venc":dd<=30?"d30":dd<=60?"d60":dd<=90?"d90":"d90p";ag[b].n++;ag[b].v+=val;});
+    /* fluxo de caixa por mês */
+    var meses=finMeses(), mLabels=meses.map(mesLabel);
+    var entSerie=meses.map(function(m){var rl=S.lancamentos.filter(function(l){return l.tipo==="receita"&&mes(l.data)===m&&finConsLanc(l);}).reduce(function(s,l){return s+(+l.valor||0);},0);var cm=S.vendas.filter(function(x){return x.etapa==="fechado"&&mes(x.data_fechamento)===m&&finConsVenda(x);}).reduce(function(s,x){return s+(+x.comissao||0);},0);return rl+cm;});
+    var saiSerie=meses.map(function(m){return S.lancamentos.filter(function(l){return l.tipo==="despesa"&&mes(l.data)===m&&finConsLanc(l);}).reduce(function(s,l){return s+(+l.valor||0);},0);});
+    var temFluxo=entSerie.concat(saiSerie).some(function(x){return x>0;});
+    /* DRE por categoria */
+    var recCat={}; recLancL.forEach(function(l){var k=l.categoria||"Outras receitas";recCat[k]=(recCat[k]||0)+(+l.valor||0);});
+    var despCat={}; despL.forEach(function(l){var k=l.categoria||"Outras";despCat[k]=(despCat[k]||0)+(+l.valor||0);});
+    /* comissões por consultor */
+    var byCons={}; vendasFech.forEach(function(v){var k=v.consultor_id||"—";byCons[k]=byCons[k]||{n:0,cred:0,com:0};byCons[k].n++;byCons[k].cred+=(+v.valor_credito||0);byCons[k].com+=(+v.comissao||0);});
+    var consRows=Object.keys(byCons).map(function(k){return {nome:memberNome(k),n:byCons[k].n,cred:byCons[k].cred,com:byCons[k].com};}).sort(function(a,b){return b.com-a.com;});
+    var credTot=vendasFech.reduce(function(s,x){return s+(+x.valor_credito||0);},0);
+    /* inadimplência por contrato */
     var byCon={}; atrasadas.forEach(function(p){byCon[p.contrato_id]=byCon[p.contrato_id]||{n:0,val:0};byCon[p.contrato_id].n++;byCon[p.contrato_id].val+=(+p.valor_previsto||0);});
-    var lista=S.lancamentos.slice().sort(function(a,b){return (b.data||"").localeCompare(a.data||"");}).slice(0,30);
+    var lista=S.lancamentos.filter(function(l){return finIn(l.data)&&finConsLanc(l);}).sort(function(a,b){return (b.data||"").localeCompare(a.data||"");}).slice(0,30);
     function dre(l,val,cls,strong){return '<div style="display:flex;justify-content:space-between;padding:'+(strong?"9px 0":"6px 0")+';border-bottom:1px solid var(--border2)'+(strong?";border-top:1px solid var(--border)":"")+'"><span style="'+(strong?"color:#fff;font-weight:700":"color:var(--muted)")+';font-size:.85rem">'+l+'</span><b class="num" style="color:'+cls+'">'+BRL(val)+'</b></div>';}
-    document.getElementById("view").innerHTML=topbar("Financeiro","Comissões, resultado do mês e saúde da carteira.",'<button class="btn" onclick="APP.formLanc()">＋ Lançamento</button>')+
+    var agMax=Math.max(ag.venc.v,ag.d30.v,ag.d60.v,ag.d90.v,ag.d90p.v,1);
+    function agrow(lab,o,cls){return '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.78rem"><span style="color:var(--muted)">'+lab+' <b style="color:var(--muted2)">('+o.n+')</b></span><b class="num" style="color:'+cls+'">'+BRL(o.v)+'</b></div><div class="bar" style="margin-top:3px"><i style="width:'+Math.round(o.v/agMax*100)+'%;background:'+cls+'"></i></div></div>';}
+    /* barra de filtro */
+    var perOpts=FIN_PER.map(function(p){return '<option value="'+p[0]+'"'+(f.per===p[0]?" selected":"")+'>'+p[1]+'</option>';}).join("");
+    var consOpts='<option value="">Toda a equipe</option>'+S.members.map(function(m){return '<option value="'+m.id+'"'+(f.cons===m.id?" selected":"")+'>'+esc(m.nome||"—")+'</option>';}).join("");
+    var barra='<div class="card finbar"><div class="finbar-row">'+
+      '<label class="finf"><span>Período</span><select onchange="APP.finSetPer(this.value)">'+perOpts+'</select></label>'+
+      (f.per==="custom"?('<label class="finf"><span>De</span><input type="date" value="'+esc(r.from)+'" onchange="APP.finSetFrom(this.value)"></label><label class="finf"><span>Até</span><input type="date" value="'+esc(r.to)+'" onchange="APP.finSetTo(this.value)"></label>'):"")+
+      '<label class="finf"><span>Consultor</span><select onchange="APP.finSetCons(this.value)">'+consOpts+'</select></label>'+
+      '<div class="finf-exp"><button class="btn ghost sm" onclick="APP.finCSVLanc()">⬇ Lançamentos</button><button class="btn ghost sm" onclick="APP.finCSVReceber()">⬇ A receber</button><button class="btn ghost sm" onclick="APP.finCSVComissoes()">⬇ Comissões</button></div>'+
+      '</div><div class="finbar-cap">Exibindo <b>'+dBR(r.from)+'</b> a <b>'+dBR(r.to)+'</b> · '+esc(consLabel)+'</div></div>';
+    document.getElementById("view").innerHTML=topbar("Financeiro","Comissões, resultado do período e saúde da carteira.",'<button class="btn" onclick="APP.formLanc()">＋ Lançamento</button>')+
+      barra+
       '<div class="kpis">'+
-        kpi("Receita do mês",BRL(recMes),"comissões "+BRL(comMes)+" + outras","accent")+
-        kpi("Despesas do mês",BRL(despMes),Object.keys(despCat).length+" categoria(s)","")+
-        kpi("Resultado do mês",BRL(resultado),resultado>=0?"lucro":"prejuízo","")+
-        kpi("Inadimplência",BRL(atrasoTot),atrasadas.length+" parcela(s) em atraso",atrasoTot?"accent":"")+
+        kpi("Receita do período",BRL(recMes),"comissões "+BRL(comMes)+" + outras","accent")+
+        kpi("Despesas do período",BRL(despMes),Object.keys(despCat).length+" categoria(s)","")+
+        kpi("Resultado",BRL(resultado),resultado>=0?"lucro no período":"prejuízo no período","")+
+        kpi("A receber (carteira)",BRL(receberTot),aReceber.length+" parcela(s) a vencer","")+
       '</div>'+
-      '<div class="card"><h2>Carteira a vencer — próximos 6 meses</h2><div class="csub">Parcelas dos clientes ainda não pagas (fluxo esperado na base).</div>'+
-        '<div style="display:flex;align-items:flex-end;gap:12px;height:150px;padding-top:8px">'+
-        meses.map(function(m,idx){var h=Math.round(serie[idx]/maxv*130);return '<div style="flex:1;text-align:center"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;background:linear-gradient(180deg,#E6D08A,#A8863B);border-radius:6px 6px 0 0;height:'+Math.max(3,h)+'px"></div></div><div style="font-size:.7rem;color:var(--muted2);margin-top:5px">'+mesLabel(m)+'</div><div style="font-size:.7rem;color:var(--muted)">'+(serie[idx]>=1000?(Math.round(serie[idx]/1000)+"k"):Math.round(serie[idx]))+'</div></div>';}).join("")+
-        '</div></div>'+
-      '<div class="grid2"><div>'+
-        '<div class="card"><h2>Resultado do mês (DRE)</h2><div class="csub">Como o mês fechou.</div>'+
+      '<div class="charts">'+
+        '<div class="chartcard"><h2>Fluxo de caixa</h2><div class="csub">Entradas × saídas por mês.</div>'+
+          (temFluxo?(chartBars2(mLabels,entSerie,saiSerie)+'<div class="leg"><span><i style="background:var(--blue)"></i>Entradas</span><span><i style="background:#7A766E"></i>Saídas</span></div>'):'<div class="empty">Sem movimento financeiro no período.</div>')+'</div>'+
+        '<div class="chartcard"><h2>Resultado do período (DRE)</h2><div class="csub">Receitas, despesas e resultado.</div>'+
           dre("Comissões de vendas",comMes,"#5BE49B")+
-          dre("Outras receitas",recLanc,"#5BE49B")+
+          (Object.keys(recCat).length?Object.keys(recCat).sort(function(a,b){return recCat[b]-recCat[a];}).map(function(k){return dre(esc(k),recCat[k],"#5BE49B");}).join(""):dre("Outras receitas",0,"#5BE49B"))+
           dre("(=) Receita total",recMes,"#fff",true)+
-          (Object.keys(despCat).length?Object.keys(despCat).map(function(k){return dre("(−) "+esc(k),despCat[k],"#FDA4AF");}).join(""):dre("(−) Despesas",0,"#FDA4AF"))+
+          (Object.keys(despCat).length?Object.keys(despCat).sort(function(a,b){return despCat[b]-despCat[a];}).map(function(k){return dre("(−) "+esc(k),despCat[k],"#FDA4AF");}).join(""):dre("(−) Despesas",0,"#FDA4AF"))+
           dre("(=) Resultado",resultado,resultado>=0?"#5BE49B":"#FDA4AF",true)+
         '</div>'+
-        '<div class="card"><h2>Lançamentos recentes</h2><div class="csub">Receitas e despesas registradas.</div>'+
-          '<table><tbody>'+
-          (lista.length?lista.map(function(l){return '<tr><td>'+dBR(l.data)+'</td><td><b style="color:#fff">'+esc(l.descricao||l.categoria||"—")+'</b>'+(l.contrato_id?('<br><span style="color:var(--muted2);font-size:.74rem">'+esc(conNome(l.contrato_id))+'</span>'):"")+'</td><td><span class="badge '+(l.tipo==="receita"?"b-ok":"b-rose")+'">'+l.tipo+'</span></td><td class="num">'+BRL(l.valor)+'</td><td><button class="act" title="Excluir" onclick="APP.delLanc(\''+l.id+'\')">🗑</button></td></tr>';}).join(""):'<tr><td colspan="5" class="empty">Nenhum lançamento. Clique em <b>Lançamento</b>.</td></tr>')+'</tbody></table></div>'+
+      '</div>'+
+      '<div class="grid2"><div>'+
+        '<div class="card"><h2>Contas a receber</h2><div class="csub">Carteira em aberto por vencimento (situação atual).</div>'+
+          (abertasAll.length?(agrow("Vencidas",ag.venc,"var(--rose)")+agrow("A vencer ≤ 30 dias",ag.d30,"var(--warn)")+agrow("31–60 dias",ag.d60,"var(--blue)")+agrow("61–90 dias",ag.d90,"var(--vio)")+agrow("Acima de 90 dias",ag.d90p,"var(--muted)")):'<div class="empty">Nenhuma parcela em aberto.</div>')+'</div>'+
+        '<div class="card"><h2>Lançamentos do período</h2><div class="csub">Receitas e despesas registradas.</div>'+
+          '<div style="overflow-x:auto"><table><tbody>'+
+          (lista.length?lista.map(function(l){return '<tr><td>'+dBR(l.data)+'</td><td><b style="color:#fff">'+esc(l.descricao||l.categoria||"—")+'</b>'+(l.contrato_id?('<br><span style="color:var(--muted2);font-size:.74rem">'+esc(conNome(l.contrato_id))+'</span>'):"")+'</td><td><span class="badge '+(l.tipo==="receita"?"b-ok":"b-rose")+'">'+l.tipo+'</span></td><td class="num">'+BRL(l.valor)+'</td><td><button class="act" title="Excluir" onclick="APP.delLanc(\''+l.id+'\')">🗑</button></td></tr>';}).join(""):'<tr><td colspan="5" class="empty">Nenhum lançamento no período.</td></tr>')+'</tbody></table></div></div>'+
       '</div><div>'+
+        '<div class="card"><h2>Contas a pagar</h2><div class="csub">Despesas do período por categoria.</div>'+
+          (Object.keys(despCat).length?('<table><tbody>'+Object.keys(despCat).sort(function(a,b){return despCat[b]-despCat[a];}).map(function(k){return '<tr><td><b style="color:#fff">'+esc(k)+'</b></td><td class="num">'+BRL(despCat[k])+'</td></tr>';}).join("")+'<tr><td style="color:var(--muted);font-weight:700;border-top:1px solid var(--border)">Total</td><td class="num" style="color:#FDA4AF;font-weight:800;border-top:1px solid var(--border)">'+BRL(despMes)+'</td></tr></tbody></table>'):'<div class="empty">Nenhuma despesa no período.</div>')+'</div>'+
         '<div class="card" style="'+(atrasoTot?'border-color:#7a2230':"")+'"><h2>⚠️ Inadimplência</h2><div class="csub">Parcelas vencidas e não pagas — priorize a cobrança.</div>'+
           (atrasadas.length?('<div style="font-size:1.5rem;font-weight:800;color:#FDA4AF" class="num">'+BRL(atrasoTot)+'</div><div style="color:var(--muted2);font-size:.78rem;margin-bottom:10px">'+atrasadas.length+' parcela(s) em '+Object.keys(byCon).length+' contrato(s)</div>'+
             Object.keys(byCon).map(function(cid){var b=byCon[cid];return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2)"><div class="person"><div class="avatar-s">'+ini(conNome(cid))+'</div><div><b>'+esc(conNome(cid))+'</b><span>'+b.n+' parcela(s) · '+BRL(b.val)+'</span></div></div><button class="btn ghost sm" onclick="APP.abrirContrato(\''+cid+'\')">Abrir</button></div>';}).join(""))
             :'<div class="empty">Nenhuma parcela em atraso. Carteira saudável 👏</div>')+'</div>'+
-        '<div class="card"><h2>Comissões (mês)</h2><div class="csub">Vendas fechadas no mês corrente.</div>'+
-          (function(){var fech=S.vendas.filter(function(x){return x.etapa==="fechado"&&mes(x.data_fechamento)===mesAtual;});return fech.length?('<table><tbody>'+fech.map(function(x){return '<tr><td><b style="color:#fff">'+esc(x.titulo||clienteNome(x.cliente_id))+'</b><br><span style="color:var(--muted2);font-size:.74rem">'+esc(memberNome(x.consultor_id))+'</span></td><td class="num">'+BRL(x.comissao)+'</td></tr>';}).join("")+'</tbody></table>'):'<div class="empty">Nenhuma venda fechada este mês ainda.</div>';})()+'</div>'+
+        '<div class="card"><h2>Comissões por consultor</h2><div class="csub">Vendas fechadas no período.</div>'+
+          (consRows.length?('<div style="overflow-x:auto"><table><thead><tr><th>Consultor</th><th>Vendas</th><th>Crédito</th><th>Comissão</th></tr></thead><tbody>'+consRows.map(function(c){return '<tr><td><b style="color:#fff">'+esc(c.nome)+'</b></td><td class="num">'+c.n+'</td><td class="num">'+BRL(c.cred)+'</td><td class="num" style="color:#5BE49B">'+BRL(c.com)+'</td></tr>';}).join("")+'<tr><td style="font-weight:700;border-top:1px solid var(--border)">Total</td><td class="num" style="border-top:1px solid var(--border)">'+vendasFech.length+'</td><td class="num" style="border-top:1px solid var(--border)">'+BRL(credTot)+'</td><td class="num" style="color:#5BE49B;font-weight:800;border-top:1px solid var(--border)">'+BRL(comMes)+'</td></tr></tbody></table></div>'):'<div class="empty">Nenhuma venda fechada no período.</div>')+'</div>'+
       '</div></div>';
   }
   function formLanc(){
@@ -1595,13 +1701,62 @@ window.APP=(function(){
   }
 
   /* ================= CALENDÁRIO ================= */
-  function renderCalendario(){
-    var lista=S.eventos.slice().sort(function(a,b){return (a.data||"").localeCompare(b.data||"");});
-    var futuros=lista.filter(function(e){return (e.data||"")>=today();});
-    document.getElementById("view").innerHTML=topbar("Calendário organizacional","Reuniões, assembleias, tarefas e lembretes.",'<button class="btn" onclick="APP.formEvento()">＋ Novo evento</button>')+
-      '<div class="card"><h2>Próximos</h2><div class="csub">O que vem por aí.</div>'+
-      (futuros.length?futuros.map(function(e){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border2)"><div><b style="color:#fff">'+esc(e.titulo)+'</b><br><span style="color:var(--muted);font-size:.8rem">'+dBR(e.data)+(e.hora?(" · "+String(e.hora).slice(0,5)):"")+' · '+esc(e.tipo)+(e.cliente_id?(" · "+esc(clienteNome(e.cliente_id))):"")+'</span></div><button class="act" onclick="APP.delEvento(\''+e.id+'\')">🗑</button></div>';}).join(""):'<div class="empty">Nenhum evento futuro.</div>')+'</div>';
+  var _CAL_WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  var _CAL_MES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  var TIPO_COR={reuniao:"var(--blue)",assembleia:"var(--vio)",tarefa:"var(--ok)",lembrete:"var(--chrome)",aniversario:"var(--rose)",vencimento:"var(--warn)",contemplacao:"var(--blue-l)"};
+  var TIPO_LAB={reuniao:"Reunião",assembleia:"Assembleia",tarefa:"Tarefa",lembrete:"Lembrete",aniversario:"Aniversário",vencimento:"Vencimento",contemplacao:"Contemplação"};
+  function calSt(){if(!S._cal){var d=new Date();S._cal={y:d.getFullYear(),m:d.getMonth()};}return S._cal;}
+  function calNav(delta){var c=calSt(),d=new Date(c.y,c.m+delta,1);c.y=d.getFullYear();c.m=d.getMonth();renderCalendario();}
+  function calHoje(){var d=new Date();S._cal={y:d.getFullYear(),m:d.getMonth()};renderCalendario();}
+  /* itens do calendário por dia (eventos + vencimentos agregados + contemplações) */
+  function calItens(){
+    var map={};
+    function push(iso,it){if(!iso)return;(map[iso]=map[iso]||[]).push(it);}
+    (S.eventos||[]).forEach(function(e){push(String(e.data||"").slice(0,10),{k:"evento",tipo:e.tipo||"reuniao",titulo:e.titulo||"(sem título)",hora:e.hora?String(e.hora).slice(0,5):"",id:e.id,cliente_id:e.cliente_id});});
+    var vencDia={};
+    (S.parcelas||[]).forEach(function(p){if(p.quitado||p.status==="pago")return;var iso=String(p.vencimento||"").slice(0,10);if(!iso)return;vencDia[iso]=vencDia[iso]||{n:0,v:0,parc:[]};vencDia[iso].n++;vencDia[iso].v+=(+p.valor_previsto||0);vencDia[iso].parc.push(p);});
+    Object.keys(vencDia).forEach(function(iso){var o=vencDia[iso];push(iso,{k:"venc",tipo:"vencimento",n:o.n,val:o.v,parc:o.parc,titulo:o.n+" vencimento(s)"});});
+    (S.contratos||[]).forEach(function(c){if(!c.contemplado||!c.data_contemplacao)return;push(String(c.data_contemplacao).slice(0,10),{k:"contempl",tipo:"contemplacao",titulo:"Contemplação — "+clienteNome(c.cliente_id),contrato_id:c.id});});
+    return map;
   }
+  function renderCalendario(){
+    var c=calSt(), start=new Date(c.y,c.m,1);
+    start.setDate(1-((start.getDay()+7)%7));
+    var itens=calItens(), hj=today(), cells="";
+    for(var i=0;i<42;i++){
+      var d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+      var iso=isoDe(d), out=(d.getMonth()!==c.m), lst=(itens[iso]||[]).slice().sort(function(a,b){return String(a.hora||"").localeCompare(String(b.hora||""));});
+      var chips=lst.slice(0,3).map(function(it){var cor=TIPO_COR[it.tipo]||"var(--muted)";var lab=it.k==="venc"?("💰 "+it.n+" venc."):it.k==="contempl"?("🏆 Contemplação"):((it.hora?it.hora+" ":"")+esc(it.titulo));return '<div class="calchip"><i style="background:'+cor+'"></i><span class="lbl">'+lab+'</span></div>';}).join("");
+      var more=lst.length>3?'<div class="calchip more">+'+(lst.length-3)+' mais</div>':"";
+      cells+='<div class="calcell'+(out?" out":"")+(iso===hj?" hoje":"")+'" onclick="APP.calDia(\''+iso+'\')"><div class="dn">'+d.getDate()+'</div>'+chips+more+'</div>';
+    }
+    var leg=Object.keys(TIPO_LAB).map(function(t){return '<span><i style="background:'+TIPO_COR[t]+'"></i>'+TIPO_LAB[t]+'</span>';}).join("");
+    var prox=S.eventos.slice().filter(function(e){return (e.data||"")>=hj;}).sort(function(a,b){return (a.data||"").localeCompare(b.data||"");}).slice(0,6);
+    document.getElementById("view").innerHTML=topbar("Calendário organizacional","Reuniões, assembleias, vencimentos e contemplações num só lugar.",'<button class="btn" onclick="APP.formEvento()">＋ Novo evento</button>')+
+      '<div class="calwrap"><div class="calhead"><h2>'+_CAL_MES[c.m]+' '+c.y+'</h2>'+
+        '<button class="btn ghost sm" onclick="APP.calNav(-1)" aria-label="Mês anterior">‹</button><button class="btn ghost sm" onclick="APP.calHoje()">Hoje</button><button class="btn ghost sm" onclick="APP.calNav(1)" aria-label="Próximo mês">›</button></div>'+
+        '<div class="calgrid">'+_CAL_WD.map(function(w){return '<div class="calwd">'+w+'</div>';}).join("")+cells+'</div>'+
+        '<div class="calleg">'+leg+'</div></div>'+
+      '<div class="grid2"><div>'+
+        '<div class="card"><h2>Próximos eventos</h2><div class="csub">O que vem por aí.</div>'+
+        (prox.length?prox.map(function(e){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border2)"><div><b style="color:#fff">'+esc(e.titulo)+'</b><br><span style="color:var(--muted);font-size:.8rem">'+dBR(e.data)+(e.hora?(" · "+String(e.hora).slice(0,5)):"")+' · '+esc(TIPO_LAB[e.tipo]||e.tipo)+(e.cliente_id?(" · "+esc(clienteNome(e.cliente_id))):"")+'</span></div><button class="act" title="Editar" onclick="APP.formEvento(\''+e.id+'\')">✎</button></div>';}).join(""):'<div class="empty">Nenhum evento futuro. Clique num dia para agendar.</div>')+'</div>'+
+      '</div><div>'+
+        '<div class="card"><h2>Integração com a Agenda</h2><div class="csub">O calendário e a Agenda compartilham os mesmos eventos.</div><p style="color:var(--muted);font-size:.86rem;margin:0 0 10px">Eventos criados aqui aparecem na <b>Agenda</b> semanal e vice-versa. Vencimentos de parcela e contemplações vêm dos <b>Contratos</b>.</p><button class="btn ghost sm" onclick="APP.go(\'agenda\')">Abrir Agenda semanal</button></div>'+
+      '</div></div>';
+  }
+  function calDia(iso){
+    var arr=calItens()[iso]||[];
+    var evs=arr.filter(function(x){return x.k==="evento";}), vs=arr.filter(function(x){return x.k==="venc";}), cs=arr.filter(function(x){return x.k==="contempl";});
+    var wd=_CAL_WD[new Date(iso+"T00:00:00").getDay()];
+    var body='<div style="font-size:.82rem;color:var(--muted);margin-bottom:10px">'+wd+', '+dBR(iso)+'</div>';
+    if(evs.length)body+='<div class="caldsec"><h4>Eventos</h4>'+evs.map(function(e){var cor=TIPO_COR[e.tipo]||"var(--muted)";return '<div class="caldrow"><span class="caldot" style="background:'+cor+'"></span><div style="flex:1"><b style="color:#fff">'+esc(e.titulo)+'</b><div style="color:var(--muted2);font-size:.74rem">'+(e.hora?e.hora+" · ":"")+esc(TIPO_LAB[e.tipo]||e.tipo)+(e.cliente_id?(" · "+esc(clienteNome(e.cliente_id))):"")+'</div></div><button class="btn ghost sm" onclick="APP.calEdit(\''+e.id+'\')">Editar</button></div>';}).join("")+'</div>';
+    if(vs.length)body+='<div class="caldsec"><h4>Vencimentos de parcela</h4>'+vs[0].parc.map(function(p){var venc=String(p.vencimento).slice(0,10),late=venc<today();return '<div class="caldrow"><span class="caldot" style="background:var(--warn)"></span><div style="flex:1"><b style="color:#fff">'+esc(conNome(p.contrato_id))+'</b><div style="color:var(--muted2);font-size:.74rem">Parcela '+(p.numero||"—")+' · '+BRL(p.valor_previsto)+(late?' · <span style="color:#FDA4AF">vencida</span>':"")+'</div></div><button class="btn ghost sm" onclick="APP.closeModal();APP.abrirContrato(\''+p.contrato_id+'\')">Abrir</button></div>';}).join("")+'</div>';
+    if(cs.length)body+='<div class="caldsec"><h4>Contemplações 🎉</h4>'+cs.map(function(x){return '<div class="caldrow"><span class="caldot" style="background:var(--blue-l)"></span><div style="flex:1"><b style="color:#fff">'+esc(x.titulo)+'</b></div><button class="btn ghost sm" onclick="APP.closeModal();APP.abrirContrato(\''+x.contrato_id+'\')">Abrir</button></div>';}).join("")+'</div>';
+    if(!evs.length&&!vs.length&&!cs.length)body+='<div class="empty">Nada agendado neste dia.</div>';
+    modal(dBR(iso),body,null,'<button class="btn" onclick="APP.calNovoEvento(\''+iso+'\')">＋ Novo evento</button>');
+  }
+  function calEdit(id){closeModal();formEvento(id);}
+  function calNovoEvento(iso){closeModal();formEvento("",{data:iso});}
   function formEvento(id,prefill){
     var e=id?(S.eventos||[]).find(function(x){return x.id===id;}):Object.assign({tipo:"reuniao",data:today()},prefill||{});
     if(!e)return;
@@ -1610,7 +1765,7 @@ window.APP=(function(){
     var hist=(e.historico||[]).slice().reverse();
     modal((id?"Editar atividade":"Nova atividade"),
       '<div class="field"><label>Título *</label><input id="e_tit" value="'+esc(e.titulo||"")+'"></div>'+
-      '<div class="fgrid"><div class="field"><label>Tipo</label><select id="e_tipo">'+optT("reuniao","Reunião")+optT("assembleia","Assembleia")+optT("tarefa","Tarefa")+optT("lembrete","Lembrete")+'</select></div>'+
+      '<div class="fgrid"><div class="field"><label>Tipo</label><select id="e_tipo">'+optT("reuniao","Reunião")+optT("assembleia","Assembleia")+optT("tarefa","Tarefa")+optT("lembrete","Lembrete")+optT("aniversario","Aniversário")+'</select></div>'+
       '<div class="field"><label>Cliente (opcional)</label><select id="e_cli"><option value="">—</option>'+optC+'</select></div></div>'+
       '<div class="fgrid"><div class="field"><label>Data</label><input id="e_data" type="date" value="'+esc(String(e.data||today()).slice(0,10))+'"></div>'+
       '<div class="field"><label>Hora</label><input id="e_hora" type="time" value="'+esc(String(e.hora||"").slice(0,5))+'"></div></div>'+
@@ -2031,6 +2186,8 @@ window.APP=(function(){
     imprimirContrato:imprimirContrato,uploadAssinado:uploadAssinado,baixarAssinado:baixarAssinado,removerAssinado:removerAssinado,
     criarCronograma:criarCronograma,marcarPaga:marcarPaga,estornarPaga:estornarPaga,toggleContemplado:toggleContemplado,delContrato:delContrato,
     portalLink:portalLink,cadastroLink:cadastroLink,formLanc:formLanc,delLanc:delLanc,
+    finSetPer:finSetPer,finSetCons:finSetCons,finSetFrom:finSetFrom,finSetTo:finSetTo,finCSVLanc:finCSVLanc,finCSVReceber:finCSVReceber,finCSVComissoes:finCSVComissoes,
+    calNav:calNav,calHoje:calHoje,calDia:calDia,calEdit:calEdit,calNovoEvento:calNovoEvento,
     qv:qv,vcons:vcons,dragStart:dragStart,dragEnd:dragEnd,dragOver:dragOver,dragLeave:dragLeave,drop:drop,
     moverEtapa:moverEtapa,ganhar:ganhar,perder:perder,gerarContrato:gerarContrato,
     formEvento:formEvento,delEvento:delEvento,formAviso:formAviso,delAviso:delAviso,
@@ -2047,7 +2204,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.6';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.7';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
