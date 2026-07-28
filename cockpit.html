@@ -350,7 +350,7 @@ window.APP=(function(){
   var CFG=(typeof DADOS!=="undefined"&&DADOS._cfg)?DADOS._cfg:{};
   var Calc=window.ConsorcioCalc, SB=null, UID=null, booted=false;
   var S={user:null, member:null, org:null, config:null,
-    clientes:[], contratos:[], vendas:[], lancamentos:[], avisos:[], eventos:[], pausas:[], members:[]};
+    clientes:[], contratos:[], vendas:[], lancamentos:[], avisos:[], eventos:[], pausas:[], members:[], convites:[]};
   var MENU1=[
     {id:"dashboard",nome:"Dashboard",ic:"📊"},
     {id:"clientes",nome:"Clientes (CRM)",ic:"👥"},
@@ -382,6 +382,46 @@ window.APP=(function(){
   function memberNome(id){var m=S.members.find(function(x){return x.id===id;});return m?(m.nome||"—"):"—";}
   function clienteNome(id){var c=S.clientes.find(function(x){return x.id===id;});return c?c.nome:"—";}
 
+  /* ============ PERFIS & PERMISSÕES (RBAC — padrão Inovar, adaptado a co_members) ============
+     - Papel do membro (co_members.papel) é o eixo: gestor/admin têm acesso total.
+     - consultor/atendimento têm matriz Ver/Editar por módulo (co_members.permissoes jsonb).
+     - Gating é 100% no FRONTEND: esconde módulos no menu, bloqueia navegação e barra escrita.
+       O RLS por org (org_id IN co_org_ids()) segue INTACTO — nada aqui restringe o gestor. */
+  var MODS_MATRIZ=["clientes","vendas","contratos","produtividade","recuperacao","financeiro","agenda","calendario","mural","aniversarios","bemestar"];
+  var MOD_NOMES={dashboard:"Dashboard",clientes:"Clientes (CRM)",vendas:"Vendas",contratos:"Contratos",produtividade:"Produtividade",recuperacao:"Recuperação & Alavancagem",financeiro:"Financeiro",agenda:"Agenda",calendario:"Calendário",mural:"Mural de avisos",aniversarios:"Aniversários",bemestar:"Bem-estar & Pausas",equipe:"Equipe & Config"};
+  function _perm(edit,view){var p={};MODS_MATRIZ.forEach(function(id){p[id]={v:false,e:false};});(view||[]).forEach(function(id){if(p[id])p[id].v=true;});(edit||[]).forEach(function(id){if(p[id]){p[id].v=true;p[id].e=true;}});return p;}
+  var _EDIT_TODOS=["bemestar"];
+  var PERFIS=[
+    {key:"gestor",nome:"Gestor",nivel:100,papel:"gestor",protegido:true,desc:"Acesso total ao cockpit, incluindo equipe, financeiro e configurações.",template:null},
+    {key:"admin",nome:"Administrador",nivel:90,papel:"admin",protegido:true,desc:"Acesso total à operação e à equipe (segundo administrador).",template:null},
+    {key:"consultor",nome:"Consultor de vendas",nivel:40,papel:"consultor",
+     desc:"Trabalha o CRM, o funil de vendas, os contratos e a agenda. Não vê o Financeiro nem a Equipe.",
+     template:function(){return _perm(["clientes","vendas","contratos","agenda","recuperacao"].concat(_EDIT_TODOS),["produtividade","calendario","mural","aniversarios"]);}},
+    {key:"atendimento",nome:"Atendimento / Recepção",nivel:30,papel:"atendimento",
+     desc:"Agenda, mural e cadastro de clientes. Somente leitura no restante liberado.",
+     template:function(){return _perm(["agenda","mural"].concat(_EDIT_TODOS),["clientes","calendario","aniversarios"]);}},
+    {key:"personalizado",nome:"Personalizado",nivel:35,papel:"consultor",
+     desc:"Sem modelo pré-definido — marque manualmente Ver/Editar por módulo.",template:function(){return _perm([],[]);}}
+  ];
+  function perfilByKey(k){for(var i=0;i<PERFIS.length;i++){if(PERFIS[i].key===k)return PERFIS[i];}return PERFIS[PERFIS.length-1];}
+  function perfilTemplate(key){var p=perfilByKey(key);return (!p||!p.template)?null:p.template();}
+  function perfisCatalogo(){return PERFIS.map(function(p){return {key:p.key,nome:p.nome,nivel:p.nivel,papel:p.papel,protegido:!!p.protegido,desc:p.desc};});}
+  function perfilInfo(m){m=m||{};var meta=(m.permissoes&&m.permissoes._perfil)||null;
+    var key=(m.papel==="gestor")?"gestor":(m.papel==="admin")?"admin":(meta||"personalizado");
+    var p=perfilByKey(key);var nivel=(m.permissoes&&typeof m.permissoes._nivel==="number")?m.permissoes._nivel:(p?p.nivel:35);
+    return {key:p.key,nome:p.nome,nivel:nivel,papel:p.papel,protegido:!!p.protegido};}
+  function montarPermissoes(matriz,perfilKey){var p=perfilByKey(perfilKey);var out={};
+    Object.keys(matriz||{}).forEach(function(mid){if(mid.charAt(0)!=="_")out[mid]=matriz[mid];});
+    out._perfil=p?p.key:"personalizado";out._nivel=p?p.nivel:35;return out;}
+  /* can(mod, "v"|"e") — gestor/admin sempre true; demais consultam a matriz. */
+  function can(mod,acao){var m=S.member;if(!m)return false;
+    if(m.papel==="gestor"||m.papel==="admin")return true;
+    if(mod==="dashboard")return true;            // painel visível a todos
+    if(mod==="equipe")return false;              // equipe: só gestor/admin
+    var p=(m.permissoes||{})[mod];if(!p)return false;
+    return acao==="e"?!!p.e:!!p.v;}
+  function canE(mod){return can(mod,"e");}
+
   /* ---------- data layer (org-scoped) ---------- */
   function tbl(t){return SB.from(t);}
   function reload(t){ // reload one collection
@@ -393,17 +433,24 @@ window.APP=(function(){
       reload("lancamentos"),reload("avisos"),reload("eventos"),reload("pausas"),reload("interacoes"),reload("parcelas"),reload("tarefas")
     ]);
   }
-  function insert(t,obj){obj.org_id=S.org.id;return tbl("co_"+t).insert(obj).select().single();}
-  function update(t,id,obj){return tbl("co_"+t).update(obj).eq("id",id).select().single();}
-  function del(t,id){return tbl("co_"+t).delete().eq("id",id);}
+  /* Choke-point de escrita: bloqueia gravação num módulo que o papel não pode editar.
+     gestor/admin sempre passam (canE true). Edição do PRÓPRIO perfil não passa por aqui
+     (usa SB.from direto), então todo mundo edita o próprio nome/foto/senha. */
+  function _blockWrite(){var mod=S._cur||"dashboard";if(canE(mod))return false;
+    toast("Seu perfil não tem permissão para editar aqui.","warn");return true;}
+  function _denied(){return Promise.resolve({error:{message:"Sem permissão para editar neste módulo."}});}
+  function insert(t,obj){if(_blockWrite())return _denied();obj.org_id=S.org.id;return tbl("co_"+t).insert(obj).select().single();}
+  function update(t,id,obj){if(_blockWrite())return _denied();return tbl("co_"+t).update(obj).eq("id",id).select().single();}
+  function del(t,id){if(_blockWrite())return _denied();return tbl("co_"+t).delete().eq("id",id);}
 
   /* ---------- nav ---------- */
   function buildMenus(){
-    function html(arr){return arr.map(function(m){return '<button data-go="'+m.id+'" onclick="APP.go(\''+m.id+'\')"><span class="ic">'+m.ic+'</span>'+m.nome+'</button>';}).join("");}
+    function html(arr){return arr.filter(function(m){return can(m.id,"v");}).map(function(m){return '<button data-go="'+m.id+'" onclick="APP.go(\''+m.id+'\')"><span class="ic">'+m.ic+'</span>'+m.nome+'</button>';}).join("");}
     document.getElementById("menu1").innerHTML=html(MENU1);
     document.getElementById("menu2").innerHTML=html(MENU2);
   }
   function go(id){
+    if(!can(id,"v")){id="dashboard";}          // gating: sem permissão de ver -> painel
     S._cur=id;
     document.querySelectorAll("#menu1 button,#menu2 button").forEach(function(b){var on=b.dataset.go===id;b.classList.toggle("active",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
     var R={dashboard:renderDashboard,clientes:renderClientes,vendas:renderVendas,contratos:renderContratos,
@@ -1572,16 +1619,89 @@ window.APP=(function(){
 
   /* ================= EQUIPE & CONFIG ================= */
   function renderEquipe(){
+    if(isGestor()){ SB.from("co_convites").select("*").eq("org_id",S.org.id).order("created_at",{ascending:false}).then(function(r){S.convites=r.data||[];_paintEquipe();}); }
+    else { S.convites=[]; _paintEquipe(); }
+  }
+  function _perfilBadge(m){var pf=perfilInfo(m);var cor=pf.protegido?"b-blue":(pf.nivel>=40?"b-ok":"b-warn");
+    return '<span class="badge '+cor+'" title="Nível '+pf.nivel+'">'+esc(pf.nome)+' · N'+pf.nivel+'</span>';}
+  function _paintEquipe(){
     var meta=(S.config&&S.config.meta_mensal_credito)||0;
-    document.getElementById("view").innerHTML=topbar("Equipe & Configurações","Sua empresa, sua equipe e suas metas.","")+
+    var podeGerir=isGestor();
+    var rows=S.members.map(function(m){var inativo=m.ativo===false;
+      var st=inativo?'<span class="badge b-rose">Inativo</span>':'<span class="badge b-ok">Ativo</span>';
+      var acoes=podeGerir?('<div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">'+
+        '<button class="btn ghost sm" onclick="APP.equipeEditar(\''+m.id+'\')">✎ Editar</button>'+
+        '<button class="btn ghost sm" onclick="APP.equipeToggle(\''+m.id+'\')">'+(inativo?"✓ Reativar":"⏸ Desativar")+'</button></div>'):'';
+      return '<tr'+(inativo?' style="opacity:.6"':'')+'><td><div class="person"><div class="avatar-s">'+ini(m.nome)+'</div><b>'+esc(m.nome||"—")+'</b></div></td>'+
+        '<td>'+_perfilBadge(m)+'</td><td>'+st+'</td><td style="text-align:right">'+acoes+'</td></tr>';}).join("");
+    var pend=(S.convites||[]).filter(function(c){return c.status==="pendente";});
+    var pendHtml=podeGerir&&pend.length?('<div class="card"><h2>Convites pendentes ('+pend.length+')</h2><div class="csub">A pessoa entra na sua equipe assim que criar a conta com este e-mail.</div>'+
+      '<table><thead><tr><th>E-mail</th><th>Perfil</th><th></th></tr></thead><tbody>'+
+      pend.map(function(c){return '<tr><td>'+esc(c.email)+'</td><td>'+_perfilBadge(c)+'</td><td style="text-align:right"><button class="btn ghost sm" onclick="APP.equipeCancelarConvite(\''+c.id+'\')">Cancelar</button></td></tr>';}).join("")+'</tbody></table></div>'):'';
+    document.getElementById("view").innerHTML=topbar("Equipe & Configurações","Sua empresa, sua equipe e suas permissões.","")+
       '<div class="card"><h2>Empresa</h2><div class="csub">Dados e meta.</div>'+
         '<div class="fgrid"><div class="field"><label>Nome da empresa</label><input id="cf_nome" value="'+esc((S.config&&S.config.nome_empresa)||S.org.nome||"")+'"></div><div class="field"><label>Meta mensal de crédito (R$)</label><input id="cf_meta" type="number" step="0.01" value="'+(meta||"")+'"></div></div>'+
         '<button class="btn" onclick="APP.saveConfig()">Salvar</button></div>'+
-      '<div class="card"><h2>Equipe ('+S.members.length+')</h2><div class="csub">Quem tem acesso ao cockpit.'+(isGestor()?' Convide informando o e-mail de quem já criou conta.':'')+'</div>'+
-        '<table><thead><tr><th>Membro</th><th>Papel</th></tr></thead><tbody>'+
-        S.members.map(function(m){return '<tr><td><div class="person"><div class="avatar-s">'+ini(m.nome)+'</div><b>'+esc(m.nome||"—")+'</b></div></td><td><span class="badge b-blue">'+esc(m.papel)+'</span></td></tr>';}).join("")+'</tbody></table>'+
-        (isGestor()?'<div style="margin-top:10px"><span class="pill">Convite de novos membros: em breve (v1.1)</span></div>':'')+'</div>';
+      '<div class="card"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px"><h2 style="flex:1">Equipe ('+S.members.length+')</h2>'+
+        (podeGerir?'<button class="btn" onclick="APP.equipeConvidar()">＋ Convidar membro</button>':'')+'</div>'+
+        '<div class="csub">Quem tem acesso ao cockpit e o que cada perfil pode ver e editar.</div>'+
+        '<table><thead><tr><th>Membro</th><th>Perfil</th><th>Status</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      pendHtml;
   }
+  /* ---- matriz de permissões (Ver/Editar) para modais de membro/convite ---- */
+  function _matrizRows(perms){perms=perms||{};return MODS_MATRIZ.map(function(id){var p=perms[id]||{};
+    return '<tr><td style="padding:4px 6px">'+esc(MOD_NOMES[id]||id)+'</td>'+
+      '<td style="text-align:center"><input type="checkbox" data-v="'+id+'"'+(p.v?" checked":"")+'></td>'+
+      '<td style="text-align:center"><input type="checkbox" data-e="'+id+'"'+(p.e?" checked":"")+'></td></tr>';}).join("");}
+  function _matrizWrap(perms){return '<div id="pm_box" style="margin-top:12px"><div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:4px">Permissões por módulo <span style="font-weight:400;color:var(--muted2)">(o perfil preenche; ajuste se quiser)</span></div>'+
+    '<div style="max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:8px"><table style="width:100%;font-size:.82rem"><thead><tr><th style="text-align:left;padding:5px 6px">Módulo</th><th style="padding:5px 6px">Ver</th><th style="padding:5px 6px">Editar</th></tr></thead><tbody>'+_matrizRows(perms)+'</tbody></table></div></div>';}
+  function _perfilSelect(selKey){var opts=perfisCatalogo().map(function(p){return '<option value="'+p.key+'"'+(p.key===selKey?" selected":"")+'>'+esc(p.nome)+' · Nível '+p.nivel+'</option>';}).join("");
+    return '<div class="field"><label>Perfil de acesso</label><select id="pm_perfil" onchange="APP.equipePerfilChg(this.value)">'+opts+'</select></div><div id="pm_desc" style="font-size:.76rem;color:var(--muted2);margin-top:-4px;margin-bottom:2px"></div>';}
+  function equipePerfilChg(key){var p=perfilByKey(key);var d=document.getElementById("pm_desc");if(d)d.textContent=p.desc||"";
+    var box=document.getElementById("pm_box");var full=(p.papel==="gestor"||p.papel==="admin");if(box)box.style.display=full?"none":"";
+    if(full)return;var tpl=perfilTemplate(key);if(!tpl)return; // personalizado mantém marcações
+    document.querySelectorAll('#pm_box input[data-v]').forEach(function(c){var m=c.getAttribute("data-v");c.checked=!!(tpl[m]&&tpl[m].v);});
+    document.querySelectorAll('#pm_box input[data-e]').forEach(function(c){var m=c.getAttribute("data-e");c.checked=!!(tpl[m]&&tpl[m].e);});}
+  function _lerMatriz(){var mtz={};document.querySelectorAll('#pm_box input[data-v]').forEach(function(c){var m=c.getAttribute("data-v");mtz[m]=mtz[m]||{};mtz[m].v=c.checked;});
+    document.querySelectorAll('#pm_box input[data-e]').forEach(function(c){var m=c.getAttribute("data-e");mtz[m]=mtz[m]||{};mtz[m].e=c.checked;});return mtz;}
+  function _soUmGestorFull(idAlvo){var fulls=S.members.filter(function(x){return (x.papel==="gestor"||x.papel==="admin")&&x.ativo!==false;});
+    return fulls.length<=1 && fulls.some(function(x){return x.id===idAlvo;});}
+  function equipeConvidar(){if(!isGestor())return;var defKey="consultor";var tpl=perfilTemplate(defKey)||{};
+    modal("Convidar membro",
+      '<div class="csub" style="margin-bottom:10px;color:var(--muted);font-size:.82rem">Informe o e-mail de quem vai usar o cockpit. Ao criar a conta com esse e-mail, a pessoa entra automaticamente na sua equipe — sem criar empresa nova.</div>'+
+      '<div class="field"><label>Nome</label><input id="pm_nome" placeholder="Nome do membro"></div>'+
+      '<div class="field"><label>E-mail</label><input id="pm_email" type="email" placeholder="pessoa@empresa.com.br"></div>'+
+      _perfilSelect(defKey)+_matrizWrap(tpl),
+      function(){var nome=(v("pm_nome")||"").trim();var email=(v("pm_email")||"").trim().toLowerCase();var pk=v("pm_perfil");var p=perfilByKey(pk);
+        if(!email||email.indexOf("@")<0){toast("Informe um e-mail válido.","warn");return false;}
+        var full=(p.papel==="gestor"||p.papel==="admin");var perms=full?{_perfil:p.key,_nivel:p.nivel}:montarPermissoes(_lerMatriz(),pk);
+        SB.from("co_convites").insert({org_id:S.org.id,email:email,nome:nome||null,papel:p.papel,permissoes:perms,criado_por:(S.member&&S.member.id)||null}).then(function(r){
+          if(r.error){toast("Erro: "+r.error.message,"danger");return;}closeModal();toast("Convite criado para "+email+".","ok");renderEquipe();});
+        return false;});
+    var d=document.getElementById("pm_desc");if(d)d.textContent=perfilByKey(defKey).desc||"";}
+  function equipeEditar(id){if(!isGestor())return;var m=S.members.find(function(x){return x.id===id;});if(!m)return;
+    var pf=perfilInfo(m);var perms=m.permissoes||{};
+    modal("Editar membro — "+esc(m.nome||"—"),
+      '<div class="field"><label>Nome</label><input id="pm_nome" value="'+esc(m.nome||"")+'"></div>'+
+      _perfilSelect(pf.key)+_matrizWrap(perms),
+      function(){var nome=(v("pm_nome")||"").trim();var pk=v("pm_perfil");var p=perfilByKey(pk);var full=(p.papel==="gestor"||p.papel==="admin");
+        if(!full && _soUmGestorFull(id)){toast("Este é o único gestor ativo. Promova outro membro a Gestor/Administrador antes de rebaixar este.","warn");return false;}
+        var perms=full?{_perfil:p.key,_nivel:p.nivel}:montarPermissoes(_lerMatriz(),pk);
+        SB.from("co_members").update({nome:nome||m.nome,papel:p.papel,permissoes:perms}).eq("id",id).then(function(r){
+          if(r.error){toast("Erro: "+r.error.message,"danger");return;}
+          if(id===(S.member&&S.member.id)){S.member.papel=p.papel;S.member.permissoes=perms;buildMenus();paintUser();}
+          closeModal();toast("Membro atualizado.","ok");reload("members").then(renderEquipe);});
+        return false;});
+    var d=document.getElementById("pm_desc");if(d)d.textContent=perfilByKey(pf.key).desc||"";
+    equipePerfilChg(pf.key);}
+  function equipeToggle(id){if(!isGestor())return;var m=S.members.find(function(x){return x.id===id;});if(!m)return;
+    var novo=(m.ativo===false);
+    if(!novo && _soUmGestorFull(id)){toast("Este é o único gestor ativo — não é possível desativá-lo.","warn");return;}
+    if(id===(S.member&&S.member.id)&&!novo){toast("Você não pode desativar o seu próprio acesso.","warn");return;}
+    SB.from("co_members").update({ativo:novo}).eq("id",id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}
+      toast(novo?"Acesso reativado.":"Acesso desativado.","ok");reload("members").then(renderEquipe);});}
+  function equipeCancelarConvite(id){if(!isGestor())return;
+    SB.from("co_convites").update({status:"cancelado"}).eq("id",id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}toast("Convite cancelado.","ok");renderEquipe();});}
   function saveConfig(){
     var obj={org_id:S.org.id,nome_empresa:v("cf_nome")||null,meta_mensal_credito:Number(v("cf_meta"))||0};
     SB.from("co_config").upsert(obj,{onConflict:"org_id"}).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}S.config=Object.assign(S.config||{},obj);toast("Salvo.","ok");renderEquipe();});
@@ -1673,7 +1793,7 @@ window.APP=(function(){
     var first=String(nm).trim().split(/\s+/)[0];
     var g=document.getElementById("grenet");if(g)g.innerHTML="Olá, <b>"+esc(first)+"</b> 👋";
     document.getElementById("uNome2").textContent=nm;
-    document.getElementById("uPapel2").textContent=S.member.papel||"";
+    document.getElementById("uPapel2").textContent=perfilInfo(S.member).nome||S.member.papel||"";
     document.getElementById("uNome3").textContent=nm;
     document.getElementById("uEmail3").textContent=S.user.email||"";
     avatarBg(document.getElementById("uAv2"),nm);
@@ -1683,7 +1803,7 @@ window.APP=(function(){
     document.getElementById("app").classList.remove("hidden");
     buildMenus();paintUser();go("dashboard");bemBoot();
   }
-  function afterAuth(user){
+  function afterAuth(user,_retry){
     UID=user.id;S.user=user;
     return SB.from("co_members").select("*").eq("user_id",UID).eq("ativo",true).limit(1).maybeSingle().then(function(r){
       if(r.data&&r.data.org_id){ S.member=r.data;
@@ -1691,6 +1811,12 @@ window.APP=(function(){
           S.org=orr.data||{id:r.data.org_id,nome:"Minha empresa"};
           return SB.from("co_config").select("*").eq("org_id",S.org.id).maybeSingle().then(function(cr){S.config=cr.data||{org_id:S.org.id};return loadAll().then(startApp);});
         });
+      } else if(!_retry){
+        // Sem membership: tenta vincular a uma org existente via convite pendente (não cria org nova).
+        return SB.rpc("co_aceitar_convite").then(function(rc){
+          if(rc&&rc.data){ return afterAuth(user,true); }
+          return needOrg(user);
+        }).catch(function(){ return needOrg(user); });
       } else { return needOrg(user); }
     });
   }
@@ -1727,9 +1853,16 @@ window.APP=(function(){
     SB.auth.signUp({email:email,password:pass,options:{data:{nome:nome,empresa:emp},emailRedirectTo:location.href.split("#")[0].split("?")[0]}}).then(function(r){
       if(r.error){err.textContent="Erro: "+r.error.message;return;}
       if(r.data.session&&r.data.user){
-        SB.rpc("co_criar_org",{p_nome:emp||("Empresa de "+(nome||email))}).then(function(){
-          // atualiza nome do membro
-          SB.from("co_members").update({nome:nome||email}).eq("user_id",r.data.user.id).then(function(){afterAuth(r.data.user);});
+        // Se houver convite pendente para este e-mail, vincula à org existente; senão cria a própria empresa.
+        SB.rpc("co_aceitar_convite").then(function(rc){
+          if(rc&&rc.data){ afterAuth(r.data.user); return; }
+          SB.rpc("co_criar_org",{p_nome:emp||("Empresa de "+(nome||email))}).then(function(){
+            SB.from("co_members").update({nome:nome||email}).eq("user_id",r.data.user.id).then(function(){afterAuth(r.data.user);});
+          });
+        }).catch(function(){
+          SB.rpc("co_criar_org",{p_nome:emp||("Empresa de "+(nome||email))}).then(function(){
+            SB.from("co_members").update({nome:nome||email}).eq("user_id",r.data.user.id).then(function(){afterAuth(r.data.user);});
+          });
         });
       } else { err.style.color="#5BE49B";err.textContent="Conta criada! Confirme pelo link no seu e-mail e depois entre."; }
     });
@@ -1784,7 +1917,8 @@ window.APP=(function(){
     agDragStart:agDragStart,agDragEnd:agDragEnd,agOver:agOver,agLeave:agLeave,agDrop:agDrop,
     agMoverDia:agMoverDia,agMoverPer:agMoverPer,
     tfDragStart:tfDragStart,tfDrop:tfDrop,tfMoverEtapa:tfMoverEtapa,formTarefa:formTarefa,delTarefa:delTarefa,
-    pausa:pausa,fimPausa:fimPausa,bemMaster:bemMaster,bemToggle:bemToggle,bemSetInt:bemSetInt,bemTestar:bemTestar,saveConfig:saveConfig,closeModal:closeModal};
+    pausa:pausa,fimPausa:fimPausa,bemMaster:bemMaster,bemToggle:bemToggle,bemSetInt:bemSetInt,bemTestar:bemTestar,saveConfig:saveConfig,closeModal:closeModal,
+    equipeEditar:equipeEditar,equipeToggle:equipeToggle,equipeConvidar:equipeConvidar,equipePerfilChg:equipePerfilChg,equipeCancelarConvite:equipeCancelarConvite};
 })();
 document.addEventListener("DOMContentLoaded",APP.boot);
 if(document.readyState!=="loading")APP.boot();
@@ -1792,7 +1926,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.4';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.5';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
