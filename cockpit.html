@@ -430,7 +430,7 @@ window.APP=(function(){
     var carteira=S.contratos.filter(function(c){return c.status==="andamento"||c.status==="contemplado";}).reduce(function(s,c){return s+(Number(c.valor_credito)||0);},0);
     var optCn=S.members.map(function(m){return '<option value="'+m.id+'"'+(m.id===fcn?" selected":"")+'>'+esc(m.nome||"—")+'</option>';}).join("");
     function optSt(val,lab){return '<option value="'+val+'"'+(fst===val?" selected":"")+'>'+lab+'</option>';}
-    document.getElementById("view").innerHTML=topbar("Clientes (CRM)","Sua base, relacionamento e próximos passos.",'<button class="btn" onclick="APP.formCliente()">＋ Novo cliente</button>')+
+    document.getElementById("view").innerHTML=topbar("Clientes (CRM)","Sua base, relacionamento e próximos passos.",'<button class="btn ghost" onclick="APP.cadastroLink()">🔗 Link de cadastro</button> <button class="btn" onclick="APP.formCliente()">＋ Novo cliente</button>')+
       '<div class="kpis">'+
         kpi("Clientes na base",n0(S.clientes.length),ativos+" ativo(s)","accent")+
         kpi("Contemplados",n0(contemp),"prova social p/ indicação","")+
@@ -941,6 +941,35 @@ window.APP=(function(){
         '<button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById(\'pl_url\').value);APP.toast(\'Link copiado!\',\'ok\')">📋 Copiar link</button> '+
         '<a class="btn ghost" href="'+esc(url)+'" target="_blank">Abrir portal</a>',
         null);
+    });
+  }
+
+  /* ---- Link público de auto-cadastro (lead entra direto na base) ---- */
+  function cadastroLink(){
+    var org=S.org||{};
+    function abrir(tok){
+      var url=location.origin+location.pathname.replace(/cockpit\.html$/,"")+"cadastro.html?t="+tok;
+      var wamsg="Olá! Quer conquistar seu imóvel ou automóvel por consórcio? Faça seu cadastro rápido aqui e a gente te apresenta as melhores condições: "+url;
+      var wa="https://wa.me/?text="+encodeURIComponent(wamsg);
+      modal("Link de cadastro de clientes",
+        '<p style="color:var(--muted);font-size:.86rem;margin-bottom:10px">Compartilhe este link no Instagram, WhatsApp ou onde quiser. Quem preencher vira um <b style="color:#fff">lead</b> automaticamente na sua base de Clientes, marcado como <b style="color:#fff">auto-cadastro</b>.</p>'+
+        '<div class="field"><label>Link público de cadastro</label><input id="cl_url" value="'+esc(url)+'" readonly onclick="this.select()"></div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+          '<button class="btn sm" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById(\'cl_url\').value);APP.toast(\'Link copiado!\',\'ok\')">📋 Copiar link</button>'+
+          '<a class="btn sm" style="background:linear-gradient(90deg,#25D366,#12A150);border-color:#12A150;color:#fff" href="'+esc(wa)+'" target="_blank" rel="noopener">💬 Compartilhar no WhatsApp</a>'+
+          '<a class="btn ghost sm" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir página</a>'+
+        '</div>',
+        null);
+    }
+    var tok=(S.config&&S.config.extra&&S.config.extra.cadastro_token)||"";
+    if(tok){abrir(tok);return;}
+    // gera e persiste (aditivo em co_config.extra — não sobrescreve outras chaves)
+    tok=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).slice(0,32);
+    var extra=Object.assign({},(S.config&&S.config.extra)||{},{cadastro_token:tok});
+    S.config=S.config||{org_id:org.id}; S.config.extra=extra;
+    SB.from("co_config").upsert({org_id:org.id,extra:extra},{onConflict:"org_id"}).then(function(r){
+      if(r&&r.error){toast("Erro ao gerar link: "+r.error.message,"danger");return;}
+      abrir(tok);
     });
   }
 
@@ -1485,7 +1514,7 @@ window.APP=(function(){
     formVenda:formVenda,delVenda:delVenda,
     formContrato:formContrato,qcon:qcon,conFiltro:conFiltro,abrirContrato:abrirContrato,voltarContratos:voltarContratos,
     criarCronograma:criarCronograma,marcarPaga:marcarPaga,estornarPaga:estornarPaga,toggleContemplado:toggleContemplado,delContrato:delContrato,
-    portalLink:portalLink,formLanc:formLanc,delLanc:delLanc,
+    portalLink:portalLink,cadastroLink:cadastroLink,formLanc:formLanc,delLanc:delLanc,
     qv:qv,vcons:vcons,dragStart:dragStart,dragEnd:dragEnd,dragOver:dragOver,dragLeave:dragLeave,drop:drop,
     moverEtapa:moverEtapa,ganhar:ganhar,perder:perder,gerarContrato:gerarContrato,
     formEvento:formEvento,delEvento:delEvento,formAviso:formAviso,delAviso:delAviso,
@@ -1501,7 +1530,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.2';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.3';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
