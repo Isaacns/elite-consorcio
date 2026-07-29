@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cockpit · Elite Consultoria e Consórcios</title>
 <meta name="theme-color" content="#C9A85C">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Elite Consórcios">
+<link rel="apple-touch-icon" href="favicon-180.png">
 <link rel="icon" href="favicon-32.png" sizes="32x32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Michroma&display=swap" rel="stylesheet">
@@ -110,6 +116,11 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{margin-bottom:11px}
 .field label{display:block;font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:5px}
 .field input,.field select,.field textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:#fff;font:inherit;font-size:.88rem}
+/* toggle 👁 exibir/ocultar senha — reutilizável em qualquer campo (login, signup, modal, bloqueio) */
+.pw{position:relative;display:block}
+.pw>input{width:100%;padding-right:42px}
+.pw>.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:1rem;line-height:1;padding:4px 7px;color:var(--muted);opacity:.85;z-index:2}
+.pw>.eye:hover{opacity:1}
 .field textarea{min-height:70px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--blue-l)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#10141F;color:#fff;padding:11px 18px;border-radius:9px;font-size:.85rem;z-index:600;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .toast.warn{background:#9A5B0E}.toast.danger{background:#A32D2D}.toast.ok{background:#15803D}
@@ -2121,8 +2132,8 @@ window.APP=(function(){
   function trocarSenha(){
     toggleUserMenu(false);
     modal("Alterar senha",
-      '<div class="field"><label>Nova senha (mín. 6)</label><input id="ts_p1" type="password" autocomplete="new-password" placeholder="••••••••"></div>'+
-      '<div class="field"><label>Repita a nova senha</label><input id="ts_p2" type="password" autocomplete="new-password" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')document.getElementById(\'mSave\').click()"></div>',
+      '<div class="field"><label>Nova senha (mín. 6)</label><div class="pw"><input id="ts_p1" type="password" autocomplete="new-password" placeholder="••••••••"><button type="button" class="eye" onclick="APP.togglePw(\'ts_p1\',this)" aria-label="Mostrar senha">👁</button></div></div>'+
+      '<div class="field"><label>Repita a nova senha</label><div class="pw"><input id="ts_p2" type="password" autocomplete="new-password" placeholder="••••••••" onkeydown="if(event.key===\'Enter\')document.getElementById(\'mSave\').click()"><button type="button" class="eye" onclick="APP.togglePw(\'ts_p2\',this)" aria-label="Mostrar senha">👁</button></div></div>',
       function(){var p=v("ts_p1"),p2=v("ts_p2");
         if(!p||p.length<6){toast("A senha precisa de no mínimo 6 caracteres.","warn");return false;}
         if(p!==p2){toast("As senhas não conferem.","warn");return false;}
@@ -2134,7 +2145,7 @@ window.APP=(function(){
     if(document.getElementById("lockovl"))return;
     var ovl=document.createElement("div");ovl.className="lockovl";ovl.id="lockovl";
     ovl.innerHTML='<div class="lbox"><div class="lav">'+esc(ini(nm))+'</div><h2>Sistema bloqueado</h2><p>'+esc(nm)+'</p>'+
-      '<input type="password" id="lk_pass" autocomplete="current-password" placeholder="Sua senha para desbloquear" onkeydown="if(event.key===\'Enter\')APP.desbloquear()">'+
+      '<div class="pw"><input type="password" id="lk_pass" autocomplete="current-password" placeholder="Sua senha para desbloquear" onkeydown="if(event.key===\'Enter\')APP.desbloquear()"><button type="button" class="eye" onclick="APP.togglePw(\'lk_pass\',this)" aria-label="Mostrar senha">👁</button></div>'+
       '<div class="lerr" id="lk_err"></div><button class="enter" onclick="APP.desbloquear()">Desbloquear</button>'+
       '<button class="llink" onclick="APP.logout()">Sair da conta</button></div>';
     document.body.appendChild(ovl);var i=document.getElementById("lk_pass");if(i)i.focus();
@@ -2296,7 +2307,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.9';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.10';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
@@ -2369,6 +2380,57 @@ window.APP_VERSION = '1.0.9';   /* §14.2: nunca const */
     if(!document.hidden){ checarVersao(); if(reg) reg.update().catch(function(){}); }
   });
   window.addEventListener('online',function(){ if(reg) reg.update().catch(function(){}); });
+})();
+</script>
+<script>
+/* PWA — botão "Instalar app" (discreto, aditivo). Não interfere no login/afterAuth, push §14 nem SW.
+   Android/desktop Chrome: usa beforeinstallprompt. iOS/iPad (Safari não dispara o evento):
+   mostra a dica "Compartilhar -> Adicionar à Tela de Início". z-index 350: some sob qualquer overlay. */
+(function(){
+  try{
+    var KEY='pwa_install_dismissed';
+    var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+    if(standalone)return;
+    try{ if(localStorage.getItem(KEY)==='1')return; }catch(_){}
+    var ua=navigator.userAgent||'';
+    var isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    var deferred=null, btn=null, tip=null;
+    function dismiss(){ try{localStorage.setItem(KEY,'1');}catch(_){}; hide(); }
+    function mkBtn(){
+      if(btn)return btn;
+      btn=document.createElement('button');
+      btn.type='button'; btn.id='pwaInstallBtn'; btn.setAttribute('aria-label','Instalar app');
+      btn.innerHTML='<span style="font-size:1rem;line-height:1">⤓</span> Instalar app';
+      btn.style.cssText='position:fixed;left:16px;bottom:16px;z-index:350;display:none;align-items:center;gap:7px;'+
+        'background:var(--grad,#2563EB);color:var(--on-accent,#fff);border:0;border-radius:999px;'+
+        'padding:10px 15px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;'+
+        'box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:.96';
+      var x=document.createElement('span'); x.textContent='✕'; x.title='Dispensar';
+      x.style.cssText='margin-left:4px;opacity:.7;font-size:.72rem';
+      x.onclick=function(ev){ev.stopPropagation();dismiss();};
+      btn.appendChild(x); document.body.appendChild(btn); return btn;
+    }
+    function show(){ mkBtn().style.display='inline-flex'; }
+    function hide(){ if(btn)btn.style.display='none'; if(tip)tip.style.display='none'; }
+    function showTip(){
+      if(!tip){
+        tip=document.createElement('div');
+        tip.style.cssText='position:fixed;left:16px;bottom:66px;z-index:351;max-width:250px;'+
+          'background:var(--surface,#1A1D22);color:var(--text,#E6E8EB);border:1px solid var(--border,#3A3F47);'+
+          'border-radius:12px;padding:12px 14px;font:inherit;font-size:.8rem;line-height:1.5;box-shadow:0 12px 34px rgba(0,0,0,.45)';
+        tip.innerHTML='Para instalar: toque em <b>Compartilhar</b> <span style="font-size:1rem">↑</span> e depois em <b>Adicionar à Tela de Início</b>.';
+        document.body.appendChild(tip);
+      }
+      tip.style.display=(tip.style.display==='block'?'none':'block');
+    }
+    window.addEventListener('beforeinstallprompt',function(e){
+      e.preventDefault(); deferred=e;
+      mkBtn().onclick=function(){ if(!deferred)return; deferred.prompt(); deferred.userChoice.finally(function(){deferred=null;hide();}); };
+      show();
+    });
+    window.addEventListener('appinstalled',function(){ dismiss(); });
+    if(isIOS){ mkBtn().onclick=showTip; setTimeout(show,1200); }
+  }catch(_){}
 })();
 </script>
 </body>
