@@ -160,8 +160,10 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
   table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
   table::-webkit-scrollbar{height:6px;display:block}
   table::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-  /* aura.js injeta #app>aside{position:relative} e derruba o drawer mobile — reforço mobile-scoped */
-  #app aside{position:fixed!important;transform:translateX(-100%)!important}
+  /* aura.js injeta #app>aside{position:relative;z-index:1} e derruba o drawer mobile — reforço mobile-scoped.
+     Precisa reasserir position, transform E z-index: sem o z-index a sidebar-drawer aberta cai para z:1 e
+     fica ATRÁS do .mbackdrop(499)/main, aparentando sobrepor/vazar o conteúdo. z:500 = acima do backdrop, abaixo do .mnav(501). */
+  #app aside{position:fixed!important;z-index:500!important;transform:translateX(-100%)!important}
   #app aside.open{transform:translateX(0)!important}
 }
 /* ===== Agenda / Pauta do Dia (§16) — acento do produto (--blue) ===== */
@@ -318,9 +320,11 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
         </div>
         <div class="err" id="lgErr"></div>
         <button class="enter" onclick="APP.login()">Entrar</button>
-        <div class="sep">primeiro acesso?</div>
-        <div class="hint">Ainda não tem conta? Crie a sua empresa em 1 passo.</div>
-        <button class="create" onclick="APP.showSignup(true)">Criar minha conta e empresa</button>
+        <div id="signupCta">
+          <div class="sep">primeiro acesso?</div>
+          <div class="hint">Ainda não tem conta? Crie a sua empresa em 1 passo.</div>
+          <button class="create" onclick="APP.showSignup(true)">Criar minha conta e empresa</button>
+        </div>
       </div>
       <div id="viewSignup" class="hidden">
         <div class="field"><label for="suNome">Seu nome</label><input id="suNome" autocomplete="name"></div>
@@ -392,6 +396,9 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 window.APP=(function(){
   "use strict";
   var CFG=(typeof DADOS!=="undefined"&&DADOS._cfg)?DADOS._cfg:{};
+  /* Auto-cadastro de empresa no login: controlado pela instância (dados.js -> _cfg.allowSignup).
+     Single-org (Elite) define false -> novos acessos só por CONVITE. Multi-empresa (base) deixa indefinido -> true. */
+  var ALLOW_SIGNUP=(CFG&&CFG.allowSignup===false)?false:true;
   var Calc=window.ConsorcioCalc, SB=null, UID=null, booted=false;
   var S={user:null, member:null, org:null, config:null,
     clientes:[], contratos:[], vendas:[], lancamentos:[], avisos:[], eventos:[], pausas:[], members:[], convites:[]};
@@ -2250,7 +2257,7 @@ window.APP=(function(){
       function(){var em=v("fg_email").trim();if(!em){toast("Informe o e-mail.","warn");return false;}
         SB.auth.resetPasswordForEmail(em,{redirectTo:location.href.split("#")[0]}).then(function(r){closeModal();toast(r.error?("Erro: "+r.error.message):("Link enviado para "+em),r.error?"danger":"ok");});return false;});
   }
-  function showSignup(on){document.getElementById("viewLogin").classList.toggle("hidden",on);document.getElementById("viewSignup").classList.toggle("hidden",!on);}
+  function showSignup(on){if(on&&!ALLOW_SIGNUP)return;document.getElementById("viewLogin").classList.toggle("hidden",on);document.getElementById("viewSignup").classList.toggle("hidden",!on);}
   function logout(){SB.auth.signOut().finally(function(){location.reload();});}
   function togglePw(id,btn){var el=document.getElementById(id);if(!el)return;var show=el.type==="password";el.type=show?"text":"password";if(btn){btn.textContent=show?"🙈":"👁";btn.setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");}}
   function toggleNav(force){var a=document.querySelector('#app aside');var b=document.getElementById('mbackdrop');if(!a)return;var open=(typeof force==='boolean')?force:!a.classList.contains('open');a.classList.toggle('open',open);if(b)b.classList.toggle('show',open);}
@@ -2270,6 +2277,7 @@ window.APP=(function(){
   }
   function boot(){
     if(booted)return;booted=true;
+    if(!ALLOW_SIGNUP){var _sc=document.getElementById("signupCta");if(_sc)_sc.classList.add("hidden");}
     if(!CFG.supabaseUrl||CFG.supabaseUrl.indexOf("SEU-PROJETO")>=0||!window.supabase){document.getElementById("lgErr").textContent="Configuração pendente.";return;}
     SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     SB.auth.onAuthStateChange(function(ev){if(ev==="PASSWORD_RECOVERY"){mostrarDefinirSenha();}});
@@ -2307,7 +2315,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.10';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.11';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
