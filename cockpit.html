@@ -40,7 +40,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @keyframes vzpulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(201,168,92,0))}50%{transform:scale(1.05);filter:drop-shadow(0 0 9px rgba(201,168,92,.45))}}
 .brand img{animation:vzpulse 2.8s ease-in-out infinite}
 .badge-cs{font-family:var(--font);font-weight:500;font-size:.58rem;letter-spacing:.26em;text-indent:.26em;text-transform:uppercase;color:var(--blue);background:none;padding:0}
-aside{width:240px;flex:0 0 240px;background:var(--bg2);border-right:1px solid var(--border2);padding:18px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+aside{width:240px;flex:0 0 240px;background:rgba(20,20,22,.6);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);border:1px solid var(--border2);border-radius:16px;padding:18px 14px;display:flex;flex-direction:column;position:sticky;top:12px;height:calc(100vh - 24px);overflow:auto;margin:12px 0 12px 12px}
 .brand{display:flex;align-items:center;gap:9px;padding:2px 6px 14px;border-bottom:1px solid var(--border2);margin-bottom:6px}
 .brand img{height:26px}.brand .wm{font-weight:400;letter-spacing:.26em;font-size:.95rem;color:#fff}
 /* lockup do board: VIZIO (Inter Regular) · CONSÓRCIO (Inter Medium, azul) */
@@ -65,7 +65,7 @@ main{flex:1;min-width:0;padding:22px 28px 60px;max-width:1240px}
 .view{display:none;animation:fade .22s ease}.view.show{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 16px}
+.kpi{background:rgba(26,26,30,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:13px;padding:15px 16px}
 .kpi .lab{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .kpi .val{font-size:1.42rem;font-weight:800;color:#fff;margin-top:7px}.kpi .sub{font-size:.76rem;color:var(--muted2);margin-top:2px}
 .kpi.accent{background:linear-gradient(150% 130% at 90% 0%,#2A2110,#141416 55%);border-color:#5C4A22}
@@ -148,7 +148,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .mnav:hover{border-color:var(--blue-l)}
 .mbackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:499}
 @media(max-width:920px){
-  aside{position:fixed;top:0;left:0;z-index:500;height:100vh;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.6)}
+  aside{position:fixed;top:0;left:0;z-index:500;height:100vh;margin:0;border-radius:0;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.6)}
   aside.open{transform:translateX(0)}
   .mnav{display:flex}
   .mbackdrop.show{display:block}
@@ -208,16 +208,16 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .kb-card em{color:var(--muted2);font-size:.7rem;font-style:normal;display:block;margin-top:2px}
 @media(max-width:1100px){.ag-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.kb{grid-template-columns:1fr}}
 /* ===== Header persistente + módulo de usuário (topo-direito, padrão Inovar) ===== */
-.apphead{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;background:rgba(20,20,22,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border2);margin:-22px -28px 20px;padding:10px 28px}
+.apphead{position:sticky;top:12px;z-index:30;display:flex;align-items:center;gap:14px;background:rgba(20,20,22,.68);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--border2);border-radius:15px;margin:0 0 20px;padding:10px 16px;box-shadow:0 10px 34px rgba(0,0,0,.3)}
 .apphead .grenet{font-size:.9rem;color:var(--muted)}.apphead .grenet b{color:var(--head);font-weight:700}
 .apphead .sp{flex:1}
 .usermenu{position:relative}
-.userchip{display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:5px 10px 5px 6px;cursor:pointer;color:var(--text);font:inherit}
+.userchip{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:5px 10px 5px 6px;cursor:pointer;color:var(--text);font:inherit}
 .userchip:hover{border-color:var(--blue-l)}
 .userchip .uc-txt{text-align:left;line-height:1.12}.userchip .uc-txt b{display:block;font-size:.82rem;color:#fff;font-weight:700}.userchip .uc-txt span{font-size:.68rem;color:var(--muted2)}
 .userchip .uc-caret{color:var(--muted);font-size:.62rem;transition:transform .15s}
 .usermenu.open .uc-caret{transform:rotate(180deg)}
-.userdrop{position:absolute;top:calc(100% + 8px);right:0;min-width:216px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:6px;display:none;z-index:60}
+.userdrop{position:absolute;top:calc(100% + 8px);right:0;min-width:216px;background:rgba(20,20,22,.9);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 44px rgba(0,0,0,.5);padding:6px;display:none;z-index:60}
 .usermenu.open .userdrop{display:block;animation:fade .16s ease}
 .userdrop button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:0;color:var(--text);font:inherit;font-size:.86rem;padding:9px 11px;border-radius:8px;cursor:pointer}
 .userdrop button:hover{background:var(--surface2);color:#fff}
@@ -226,7 +226,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .userdrop hr{border:0;border-top:1px solid var(--border2);margin:5px 4px}
 .userdrop .who2{padding:8px 11px 6px;border-bottom:1px solid var(--border2);margin-bottom:4px}
 .userdrop .who2 b{display:block;color:#fff;font-size:.86rem}.userdrop .who2 span{font-size:.72rem;color:var(--muted2)}
-@media(max-width:920px){.apphead{margin:-58px 0 16px;padding:10px 8px 10px 60px}}
+@media(max-width:920px){.apphead{top:12px;margin:0 0 16px;padding:10px 14px 10px 60px}}
 @media(max-width:560px){.apphead .grenet{display:none}.userchip .uc-txt{display:none}}
 /* ===== Tela de bloqueio ===== */
 .lockovl{position:fixed;inset:0;z-index:950;background:radial-gradient(120% 90% at 85% -10%,var(--soft),transparent 55%),var(--bg);display:flex;align-items:center;justify-content:center;padding:22px}
@@ -377,6 +377,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
           <button role="menuitem" onclick="APP.editarFoto()"><span class="ic">🖼️</span>Foto do perfil</button>
           <button role="menuitem" onclick="APP.trocarSenha()"><span class="ic">🔑</span>Alterar senha</button>
           <button role="menuitem" onclick="APP.bloquear()"><span class="ic">🔒</span>Bloquear o sistema</button>
+          <button role="menuitem" id="pwaMenuItem" style="display:none"><span class="ic">⤓</span>Instalar app</button>
           <hr>
           <button role="menuitem" class="danger" onclick="APP.logout()"><span class="ic">↩</span>Sair</button>
         </div>
@@ -2315,7 +2316,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.11';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.12';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
@@ -2391,53 +2392,40 @@ window.APP_VERSION = '1.0.11';   /* §14.2: nunca const */
 })();
 </script>
 <script>
-/* PWA — botão "Instalar app" (discreto, aditivo). Não interfere no login/afterAuth, push §14 nem SW.
+/* PWA — item "Instalar app" no menu do usuário (discreto, aditivo). Não interfere no login/afterAuth, push §14 nem SW.
    Android/desktop Chrome: usa beforeinstallprompt. iOS/iPad (Safari não dispara o evento):
-   mostra a dica "Compartilhar -> Adicionar à Tela de Início". z-index 350: some sob qualquer overlay. */
+   mostra a dica "Compartilhar -> Adicionar à Tela de Início". O item do menu fica oculto até haver como instalar. */
 (function(){
   try{
-    var KEY='pwa_install_dismissed';
     var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
     if(standalone)return;
-    try{ if(localStorage.getItem(KEY)==='1')return; }catch(_){}
     var ua=navigator.userAgent||'';
     var isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-    var deferred=null, btn=null, tip=null;
-    function dismiss(){ try{localStorage.setItem(KEY,'1');}catch(_){}; hide(); }
-    function mkBtn(){
-      if(btn)return btn;
-      btn=document.createElement('button');
-      btn.type='button'; btn.id='pwaInstallBtn'; btn.setAttribute('aria-label','Instalar app');
-      btn.innerHTML='<span style="font-size:1rem;line-height:1">⤓</span> Instalar app';
-      btn.style.cssText='position:fixed;left:16px;bottom:16px;z-index:350;display:none;align-items:center;gap:7px;'+
-        'background:var(--grad,#2563EB);color:var(--on-accent,#fff);border:0;border-radius:999px;'+
-        'padding:10px 15px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;'+
-        'box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:.96';
-      var x=document.createElement('span'); x.textContent='✕'; x.title='Dispensar';
-      x.style.cssText='margin-left:4px;opacity:.7;font-size:.72rem';
-      x.onclick=function(ev){ev.stopPropagation();dismiss();};
-      btn.appendChild(x); document.body.appendChild(btn); return btn;
-    }
-    function show(){ mkBtn().style.display='inline-flex'; }
-    function hide(){ if(btn)btn.style.display='none'; if(tip)tip.style.display='none'; }
+    var deferred=null, tip=null;
+    function item(){ return document.getElementById('pwaMenuItem'); }
+    function closeMenu(){ try{ if(window.APP&&APP.toggleUserMenu)APP.toggleUserMenu(false); }catch(_){} }
+    function show(){ var it=item(); if(it)it.style.display='flex'; }
+    function hide(){ var it=item(); if(it)it.style.display='none'; if(tip)tip.style.display='none'; }
     function showTip(){
+      closeMenu();
       if(!tip){
         tip=document.createElement('div');
-        tip.style.cssText='position:fixed;left:16px;bottom:66px;z-index:351;max-width:250px;'+
+        tip.style.cssText='position:fixed;top:64px;right:16px;z-index:360;max-width:250px;'+
           'background:var(--surface,#1A1D22);color:var(--text,#E6E8EB);border:1px solid var(--border,#3A3F47);'+
           'border-radius:12px;padding:12px 14px;font:inherit;font-size:.8rem;line-height:1.5;box-shadow:0 12px 34px rgba(0,0,0,.45)';
-        tip.innerHTML='Para instalar: toque em <b>Compartilhar</b> <span style="font-size:1rem">↑</span> e depois em <b>Adicionar à Tela de Início</b>.';
+        tip.innerHTML='Para instalar: toque em <b>Compartilhar</b> <span style="font-size:1rem">↑</span> e depois em <b>Adicionar à Tela de Início</b>. <span data-x style="cursor:pointer;opacity:.6;margin-left:6px">✕</span>';
         document.body.appendChild(tip);
+        var xb=tip.querySelector('[data-x]'); if(xb)xb.onclick=function(){tip.style.display='none';};
       }
-      tip.style.display=(tip.style.display==='block'?'none':'block');
+      tip.style.display='block';
     }
     window.addEventListener('beforeinstallprompt',function(e){
       e.preventDefault(); deferred=e;
-      mkBtn().onclick=function(){ if(!deferred)return; deferred.prompt(); deferred.userChoice.finally(function(){deferred=null;hide();}); };
+      var it=item(); if(it)it.onclick=function(){ closeMenu(); if(!deferred)return; deferred.prompt(); deferred.userChoice.finally(function(){deferred=null;hide();}); };
       show();
     });
-    window.addEventListener('appinstalled',function(){ dismiss(); });
-    if(isIOS){ mkBtn().onclick=showTip; setTimeout(show,1200); }
+    window.addEventListener('appinstalled',function(){ hide(); });
+    if(isIOS){ var it=item(); if(it)it.onclick=showTip; show(); }
   }catch(_){}
 })();
 </script>
