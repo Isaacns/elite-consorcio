@@ -140,6 +140,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
         '<div class="priv">Seus dados são usados apenas para '+esc(EMPRESA)+' entrar em contato sobre seu consórcio.</div>'+
       '</div>';
     el("f").addEventListener("submit",submit);
+    // Pré-preenchimento vindo do simulador da landing (?interesse=&faixa=&sim=). Só aceita valores que existem nos selects.
+    (function(){
+      function pick(sel,v){ if(!v) return; var o=sel.options; for(var i=0;i<o.length;i++){ if(o[i].value===v){ sel.value=v; return; } } }
+      pick(el("i_interesse"),q("interesse"));
+      pick(el("i_faixa"),q("faixa"));
+      var s=q("sim"); if(s) el("i_obs").value=s.slice(0,300);
+    })();
   }
 
   function val(id){return (el(id)&&el(id).value||"").trim();}

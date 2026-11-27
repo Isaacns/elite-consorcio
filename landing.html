@@ -223,6 +223,38 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
 .wa-float:hover{transform:scale(1.08)}
 .wa-float svg{width:32px;height:32px;fill:#fff}
 
+/* ---------- simulador ---------- */
+.sim{margin-top:34px;background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--border);
+  border-radius:22px;padding:clamp(18px,3vw,30px);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.sim-tabs{display:inline-flex;gap:6px;padding:5px;border-radius:999px;background:var(--bg);border:1px solid var(--border2);flex-wrap:wrap}
+.sim-tab{font:inherit;font-family:var(--font-display);font-weight:600;font-size:.92rem;letter-spacing:.02em;color:var(--muted);
+  background:transparent;border:0;border-radius:999px;padding:10px 18px;cursor:pointer;transition:color .2s,background-color .2s}
+.sim-tab.on{background:var(--soft);color:var(--head)}
+.sim-tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sim-body{margin-top:24px}
+.sim-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sim-lbl{color:var(--muted);font-size:.9rem}
+.sim-val{font-family:var(--font-display);font-weight:700;font-size:clamp(1.5rem,3.6vw,2rem);color:var(--head);font-variant-numeric:tabular-nums}
+#simRange{--p:40%;-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;margin:18px 0 8px;
+  background:linear-gradient(90deg,var(--gold) 0 var(--p),var(--surface2) var(--p) 100%);outline:none;cursor:pointer}
+#simRange::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--gold-l);
+  border:3px solid var(--bg);box-shadow:0 0 0 2px var(--gold),0 6px 16px rgba(0,0,0,.45)}
+#simRange::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--gold-l);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--gold)}
+#simRange:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--gold)}
+.sim-ticks{display:flex;justify-content:space-between;gap:10px;color:var(--muted2);font-size:.78rem}
+.sim-out{margin-top:24px;padding-top:22px;border-top:1px solid var(--border2);display:flex;align-items:flex-end;
+  justify-content:space-between;gap:20px;flex-wrap:wrap}
+.sim-out>*{min-width:0}
+.sim-k{color:var(--muted);font-size:.88rem}
+.sim-big{font-family:var(--font-display);font-weight:700;font-size:clamp(2.1rem,6vw,3rem);color:var(--gold-l);line-height:1.1;font-variant-numeric:tabular-nums}
+.sim-k2{color:var(--muted2);font-size:.8rem;margin-top:2px}
+.sim-cta{display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:600px){
+  .sim-cta{width:100%}
+  .sim-cta .btn{flex:1 1 100%;justify-content:center}
+  .sim-tab{padding:9px 14px;font-size:.86rem}
+}
+
 /* ---------- responsivo ---------- */
 @media (max-width:900px){
   .hero-grid{grid-template-columns:1fr;gap:24px}
@@ -276,6 +308,7 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
       </span>
     </a>
     <nav class="nav-links" id="navlinks">
+      <a href="#simulador">Simulador</a>
       <a href="#como-funciona">Como funciona</a>
       <a href="#creditos">Créditos</a>
       <a href="#porque">Por que a Elite</a>
@@ -283,7 +316,7 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
     </nav>
     <div class="nav-cta">
       <a class="btn btn-ghost" href="https://wa.me/5571993489578?text=Ol%C3%A1!%20Vim%20pela%20p%C3%A1gina%20da%20Elite%20e%20quero%20falar%20sobre%20cons%C3%B3rcio." target="_blank" rel="noopener">WhatsApp</a>
-      <a class="btn btn-gold" href="https://elitecc.viziostudio.com.br/cadastro.html" target="_blank" rel="noopener">Simular</a>
+      <a class="btn btn-gold" href="#simulador">Simular</a>
     </div>
     <button class="burger" id="burger" aria-label="Abrir menu">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -301,9 +334,9 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
       <h1>Realize seus sonhos com <span class="gold-text">consórcio</span></h1>
       <p class="lead">Seu <b>imóvel</b> ou seu <b>automóvel</b> sem juros e sem entrada, com o planejamento e o acompanhamento de perto da Elite Consultoria e Consórcios — em Salvador e toda a Bahia.</p>
       <div class="hero-cta">
-        <a class="btn btn-gold" href="https://elitecc.viziostudio.com.br/cadastro.html" target="_blank" rel="noopener">
+        <a class="btn btn-gold" href="#simulador">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          Simular / Cadastrar
+          Simular minha parcela
         </a>
         <a class="btn btn-wa" href="https://wa.me/5571993489578?text=Ol%C3%A1!%20Vim%20pela%20p%C3%A1gina%20da%20Elite%20e%20quero%20simular%20meu%20cons%C3%B3rcio." target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24s8.23 3.7 8.23 8.24-3.69 8.24-8.24 8.24z"/></svg>
@@ -335,6 +368,41 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
     <div class="selo"><span class="mk">C</span><span><b>Consórcio Canopus</b><small>SUAS CONQUISTAS COMEÇAM AQUI</small></span></div>
   </div>
 </div>
+
+<!-- ============ SIMULADOR ============ -->
+<section id="simulador">
+  <div class="wrap">
+    <div class="eyebrow">Simulador</div>
+    <h2>Quanto fica a sua parcela?</h2>
+    <p class="lead">Escolha o tipo de bem e o valor do crédito. A parcela mostrada vem direto da nossa tabela vigente.</p>
+    <div class="sim" id="sim">
+      <div class="sim-tabs" role="tablist" aria-label="Tipo de bem">
+        <button type="button" class="sim-tab on" data-tipo="imovel" role="tab" aria-selected="true">Imóvel</button>
+        <button type="button" class="sim-tab" data-tipo="auto" role="tab" aria-selected="false">Automóvel &amp; Caminhão</button>
+      </div>
+      <div class="sim-body">
+        <div class="sim-row">
+          <label for="simRange" class="sim-lbl">Valor do crédito</label>
+          <div class="sim-val" id="simCredito" aria-live="polite">R$ 180.000</div>
+        </div>
+        <input type="range" id="simRange" min="0" max="5" step="1" value="2" aria-label="Valor do crédito">
+        <div class="sim-ticks" id="simTicks"><span>R$ 120.000</span><span>R$ 400.000</span></div>
+        <div class="sim-out">
+          <div>
+            <div class="sim-k">Parcela a partir de</div>
+            <div class="sim-big" id="simParcela" aria-live="polite">R$ 720,00</div>
+            <div class="sim-k2">por mês · tabela vigente da Elite</div>
+          </div>
+          <div class="sim-cta">
+            <a class="btn btn-gold" id="simGo" href="https://elitecc.viziostudio.com.br/cadastro.html" target="_blank" rel="noopener">Quero esta simulação</a>
+            <a class="btn btn-wa" id="simWa" href="https://wa.me/5571993489578" target="_blank" rel="noopener">Falar no WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="tables-note">Valores de referência das tabelas vigentes, sujeitos às condições da administradora e à disponibilidade de grupos. Um consultor da Elite monta com você o plano ideal.</p>
+  </div>
+</section>
 
 <!-- ============ COMO FUNCIONA ============ -->
 <section id="como-funciona">
@@ -420,7 +488,7 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
     </div>
     <p class="tables-note">Valores de referência das tabelas vigentes, sujeitos a condições da administradora e à disponibilidade de grupos. A parcela final pode variar conforme prazo, taxa de administração e fundo de reserva. Consulte um consultor para a simulação personalizada.</p>
     <div style="text-align:center;margin-top:26px">
-      <a class="btn btn-gold" href="https://elitecc.viziostudio.com.br/cadastro.html" target="_blank" rel="noopener">Quero simular meu crédito</a>
+      <a class="btn btn-gold" href="#simulador">Quero simular meu crédito</a>
     </div>
   </div>
 </section>
@@ -771,6 +839,44 @@ footer{border-top:1px solid var(--border2);background:var(--bg2);padding:48px 0 
   else document.addEventListener('DOMContentLoaded', mount);
 })();
 
+</script>
+<script>
+/* Simulador — usa SÓ os valores reais da tabela vigente da Elite (sem fórmula). */
+(function(){
+  var T={
+    imovel:[[120000,480],[150000,600],[180000,720],[200000,800],[220000,880],[400000,1856.80]],
+    auto:[[40000,397.84],[50574,614.32],[60951,715.72],[70328,825.81],[84393,991],[119900,1505],[205000,2464]]
+  };
+  var r=document.getElementById("simRange"); if(!r) return;
+  var tipo="imovel", started=false;
+  function el(id){return document.getElementById(id);}
+  function brl(n,d){return "R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});}
+  function faixa(v){return v<=50000?"Até R$ 50 mil":v<=100000?"R$ 50 mil a R$ 100 mil":v<=200000?"R$ 100 mil a R$ 200 mil":v<=400000?"R$ 200 mil a R$ 400 mil":"Acima de R$ 400 mil";}
+  function paint(){
+    var arr=T[tipo]; r.max=arr.length-1;
+    var i=Math.max(0,Math.min(+r.value,arr.length-1)), c=arr[i][0], p=arr[i][1];
+    r.style.setProperty("--p",(arr.length>1?i/(arr.length-1)*100:0)+"%");
+    el("simCredito").textContent=brl(c,0);
+    el("simParcela").textContent=brl(p,2);
+    el("simTicks").innerHTML="<span>"+brl(arr[0][0],0)+"</span><span>"+brl(arr[arr.length-1][0],0)+"</span>";
+    var interesse=tipo==="imovel"?"Imóvel":"Automóvel";
+    var resumo=interesse+" · crédito "+brl(c,0)+" · parcela a partir de "+brl(p,2);
+    el("simGo").href="https://elitecc.viziostudio.com.br/cadastro.html?interesse="+encodeURIComponent(interesse)+
+      "&faixa="+encodeURIComponent(faixa(c))+"&sim="+encodeURIComponent("Simulação no site: "+resumo);
+    el("simWa").href="https://wa.me/5571993489578?text="+encodeURIComponent("Olá! Fiz uma simulação no site da Elite: "+resumo+". Quero saber mais.");
+  }
+  function track(){ if(started) return; started=true;
+    try{(window.dataLayer=window.dataLayer||[]).push({event:"simulacao_iniciada",tipo:tipo});}catch(_){} }
+  r.addEventListener("input",function(){track();paint();});
+  Array.prototype.forEach.call(document.querySelectorAll(".sim-tab"),function(b){
+    b.addEventListener("click",function(){
+      tipo=b.getAttribute("data-tipo");
+      Array.prototype.forEach.call(document.querySelectorAll(".sim-tab"),function(x){var on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-selected",on?"true":"false");});
+      r.max=T[tipo].length-1; r.value=Math.floor((T[tipo].length-1)/2); track(); paint();
+    });
+  });
+  paint();
+})();
 </script>
 
 </body>
