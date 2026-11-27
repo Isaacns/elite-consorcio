@@ -247,6 +247,34 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
 .leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.76rem;color:var(--muted)}
 .leg span{display:inline-flex;align-items:center;gap:6px}.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
 @media(max-width:920px){.charts{grid-template-columns:1fr}}
+/* ---------- Captação & Instagram ---------- */
+.kpis.k3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:920px){.kpis.k3{grid-template-columns:repeat(2,1fr)}.kpis.k3 .kpi .val{font-size:clamp(.98rem,4.4vw,1.42rem);white-space:nowrap}}
+.ctabs{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--bg2);border:1px solid var(--border2);margin-bottom:16px;flex-wrap:wrap}
+.ctabs button{font:inherit;font-size:.84rem;font-weight:600;color:var(--muted);background:transparent;border:0;border-radius:9px;padding:8px 14px;cursor:pointer;transition:color .15s,background-color .15s}
+.ctabs button.on{background:var(--soft);color:#fff}
+.ctabs button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ctabs.perbar{margin-left:auto}
+.linkcli{font:inherit;font-weight:700;color:#fff;background:none;border:0;padding:0;cursor:pointer;text-align:left}.linkcli:hover{text-decoration:underline}.linkcli:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:920px){.ctabs.perbar{margin-left:0}
+  /* alvos de toque >= 40 px no celular (barra de tela §1) */
+  .ctabs button,.act,.btn,.btn.sm,.linkcli{min-height:40px;min-width:40px}.btn.sm{display:inline-flex;align-items:center;justify-content:center}
+  #app main select,#app main input:not([type=checkbox]):not([type=radio]),.modal select,.modal input:not([type=checkbox]):not([type=radio]){min-height:40px}}
+th.r,td.r{text-align:right}
+.qlead{display:flex;gap:12px;align-items:flex-start;padding:11px 2px;border-bottom:1px solid var(--border2)}
+.qlead:last-child{border-bottom:0}
+.qlead .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.nbadge{margin-left:auto;background:var(--rose,#F87171);color:#fff;font-size:.66rem;font-weight:800;border-radius:20px;padding:1px 7px;line-height:1.5}
+.orig{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 18px}
+.orig>div>span{display:block;font-size:.68rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.orig>div>div{color:var(--text);font-size:.86rem;margin-top:3px;overflow-wrap:anywhere}
+.igposts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.igpost{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;min-width:0}
+.igpost .th{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#111}
+.igpost .th.ph{display:grid;place-items:center;font-size:2rem;background:linear-gradient(150deg,#2A2110,#141416)}
+.igpost .mt{padding:9px 10px;font-size:.74rem;color:var(--muted);display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}
+.igpost .mt b{color:#fff}
+.demo-tag{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#F0B968;background:var(--warn-bg);border-radius:20px;padding:3px 9px;vertical-align:middle}
 /* ===== Financeiro — barra de filtro (período/consultor/export) ===== */
 .finbar{padding:12px 16px}
 .finbar-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
@@ -376,6 +404,7 @@ tbody tr.clk{cursor:pointer}tbody tr.clk:hover{background:var(--surface2)}
           <button role="menuitem" onclick="APP.editarPerfil()"><span class="ic">👤</span>Editar perfil</button>
           <button role="menuitem" onclick="APP.editarFoto()"><span class="ic">🖼️</span>Foto do perfil</button>
           <button role="menuitem" onclick="APP.trocarSenha()"><span class="ic">🔑</span>Alterar senha</button>
+          <button role="menuitem" onclick="APP.abrirNovidades()"><span class="ic">✨</span>Novidades</button>
           <button role="menuitem" onclick="APP.bloquear()"><span class="ic">🔒</span>Bloquear o sistema</button>
           <button role="menuitem" id="pwaMenuItem" style="display:none"><span class="ic">⤓</span>Instalar app</button>
           <hr>
@@ -402,9 +431,12 @@ window.APP=(function(){
   var ALLOW_SIGNUP=(CFG&&CFG.allowSignup===false)?false:true;
   var Calc=window.ConsorcioCalc, SB=null, UID=null, booted=false;
   var S={user:null, member:null, org:null, config:null,
-    clientes:[], contratos:[], vendas:[], lancamentos:[], avisos:[], eventos:[], pausas:[], members:[], convites:[]};
+    clientes:[], contratos:[], vendas:[], lancamentos:[], avisos:[], eventos:[], pausas:[], members:[], convites:[],
+    campanhas:[], midia_gastos:[], social_contas:[], social_metricas:[], social_posts:[]};
   var MENU1=[
     {id:"dashboard",nome:"Dashboard",ic:"📊"},
+    {id:"captacao",nome:"Captação",ic:"📣"},
+    {id:"instagram",nome:"Instagram",ic:"📸"},
     {id:"clientes",nome:"Clientes (CRM)",ic:"👥"},
     {id:"vendas",nome:"Vendas",ic:"💼"},
     {id:"contratos",nome:"Contratos",ic:"📄"},
@@ -439,8 +471,8 @@ window.APP=(function(){
      - consultor/atendimento têm matriz Ver/Editar por módulo (co_members.permissoes jsonb).
      - Gating é 100% no FRONTEND: esconde módulos no menu, bloqueia navegação e barra escrita.
        O RLS por org (org_id IN co_org_ids()) segue INTACTO — nada aqui restringe o gestor. */
-  var MODS_MATRIZ=["clientes","vendas","contratos","produtividade","recuperacao","financeiro","agenda","calendario","mural","aniversarios","bemestar"];
-  var MOD_NOMES={dashboard:"Dashboard",clientes:"Clientes (CRM)",vendas:"Vendas",contratos:"Contratos",produtividade:"Produtividade",recuperacao:"Recuperação & Alavancagem",financeiro:"Financeiro",agenda:"Agenda",calendario:"Calendário",mural:"Mural de avisos",aniversarios:"Aniversários",bemestar:"Bem-estar & Pausas",equipe:"Equipe & Config"};
+  var MODS_MATRIZ=["captacao","instagram","clientes","vendas","contratos","produtividade","recuperacao","financeiro","agenda","calendario","mural","aniversarios","bemestar"];
+  var MOD_NOMES={dashboard:"Dashboard",captacao:"Captação",instagram:"Instagram",clientes:"Clientes (CRM)",vendas:"Vendas",contratos:"Contratos",produtividade:"Produtividade",recuperacao:"Recuperação & Alavancagem",financeiro:"Financeiro",agenda:"Agenda",calendario:"Calendário",mural:"Mural de avisos",aniversarios:"Aniversários",bemestar:"Bem-estar & Pausas",equipe:"Equipe & Config"};
   function _perm(edit,view){var p={};MODS_MATRIZ.forEach(function(id){p[id]={v:false,e:false};});(view||[]).forEach(function(id){if(p[id])p[id].v=true;});(edit||[]).forEach(function(id){if(p[id]){p[id].v=true;p[id].e=true;}});return p;}
   var _EDIT_TODOS=["bemestar"];
   var PERFIS=[
@@ -448,10 +480,10 @@ window.APP=(function(){
     {key:"admin",nome:"Administrador",nivel:90,papel:"admin",protegido:true,desc:"Acesso total à operação e à equipe (segundo administrador).",template:null},
     {key:"consultor",nome:"Consultor de vendas",nivel:40,papel:"consultor",
      desc:"Trabalha o CRM, o funil de vendas, os contratos e a agenda. Não vê o Financeiro nem a Equipe.",
-     template:function(){return _perm(["clientes","vendas","contratos","agenda","recuperacao"].concat(_EDIT_TODOS),["produtividade","calendario","mural","aniversarios"]);}},
+     template:function(){return _perm(["captacao","clientes","vendas","contratos","agenda","recuperacao"].concat(_EDIT_TODOS),["instagram","produtividade","calendario","mural","aniversarios"]);}},
     {key:"atendimento",nome:"Atendimento / Recepção",nivel:30,papel:"atendimento",
      desc:"Agenda, mural e cadastro de clientes. Somente leitura no restante liberado.",
-     template:function(){return _perm(["agenda","mural"].concat(_EDIT_TODOS),["clientes","calendario","aniversarios"]);}},
+     template:function(){return _perm(["captacao","agenda","mural"].concat(_EDIT_TODOS),["instagram","clientes","calendario","aniversarios"]);}},
     {key:"personalizado",nome:"Personalizado",nivel:35,papel:"consultor",
      desc:"Sem modelo pré-definido — marque manualmente Ver/Editar por módulo.",template:function(){return _perm([],[]);}}
   ];
@@ -476,13 +508,22 @@ window.APP=(function(){
 
   /* ---------- data layer (org-scoped) ---------- */
   function tbl(t){return SB.from(t);}
+  /* coleções que só crescem: janela de tempo/limite (as telas usam no máx. 6 meses / 90 dias / 12 posts) */
+  var JANELA={midia_gastos:{col:"data",dias:400},social_metricas:{col:"data",dias:120},social_posts:{ord:"publicado_em",lim:60},campanhas:{ord:"created_at",lim:500}};
   function reload(t){ // reload one collection
-    return tbl("co_"+t).select("*").eq("org_id",S.org.id).then(function(r){ S[t]=r.data||[]; });
+    var q=tbl("co_"+t).select("*").eq("org_id",S.org.id),j=JANELA[t];
+    if(j&&j.dias){var d=new Date();d.setDate(d.getDate()-j.dias);q=q.gte(j.col,d.toISOString().slice(0,10));}
+    if(j&&j.lim){q=q.order(j.ord,{ascending:false}).limit(j.lim);}
+    if(t==="clientes"){var d30=new Date();d30.setDate(d30.getDate()-30);q=q.or("lead_etapa.is.null,lead_etapa.neq.suspeito,created_at.gte."+d30.toISOString().slice(0,10));}
+    return q.then(function(r){ S[t]=r.data||[]; });
   }
+  /* trava o Salvar do modal durante a gravação (evita duplo toque = registro duplicado) */
+  function salvando(on){var b=document.getElementById("mSave");if(!b)return;b.disabled=!!on;b.textContent=on?"Salvando…":"Salvar";}
   function loadAll(){
     return Promise.all([
       reload("members"),reload("clientes"),reload("contratos"),reload("vendas"),
-      reload("lancamentos"),reload("avisos"),reload("eventos"),reload("pausas"),reload("interacoes"),reload("parcelas"),reload("tarefas")
+      reload("lancamentos"),reload("avisos"),reload("eventos"),reload("pausas"),reload("interacoes"),reload("parcelas"),reload("tarefas"),
+      reload("campanhas"),reload("midia_gastos"),reload("social_contas"),reload("social_metricas"),reload("social_posts")
     ]);
   }
   /* Choke-point de escrita: bloqueia gravação num módulo que o papel não pode editar.
@@ -500,12 +541,13 @@ window.APP=(function(){
     function html(arr){return arr.filter(function(m){return can(m.id,"v");}).map(function(m){return '<button data-go="'+m.id+'" onclick="APP.go(\''+m.id+'\')"><span class="ic">'+m.ic+'</span>'+m.nome+'</button>';}).join("");}
     document.getElementById("menu1").innerHTML=html(MENU1);
     document.getElementById("menu2").innerHTML=html(MENU2);
+    atualizarBadgeLeads();
   }
   function go(id){
     if(!can(id,"v")){id="dashboard";}          // gating: sem permissão de ver -> painel
     S._cur=id;
     document.querySelectorAll("#menu1 button,#menu2 button").forEach(function(b){var on=b.dataset.go===id;b.classList.toggle("active",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
-    var R={dashboard:renderDashboard,clientes:renderClientes,vendas:renderVendas,contratos:renderContratos,
+    var R={dashboard:renderDashboard,captacao:renderCaptacao,instagram:renderInstagram,clientes:renderClientes,vendas:renderVendas,contratos:renderContratos,
       produtividade:renderProdutividade,recuperacao:renderRecuperacao,financeiro:renderFinanceiro,
       agenda:renderAgenda,calendario:renderCalendario,mural:renderMural,aniversarios:renderAniversarios,bemestar:renderBemestar,equipe:renderEquipe};
     (R[id]||renderDashboard)();
@@ -638,6 +680,8 @@ window.APP=(function(){
   }
   function buildAlertasHome(){
     var out="";
+    var pl=leadsPendentes();
+    if(pl.length)out+=alertItem("📣",pl.length+" lead(s) aguardando 1º contato","O mais recente chegou há "+espera(pl[0].created_at)+" · abra a Captação.","warn");
     S.contratos.filter(function(c){return c.contemplado&&c.status==="contemplado";}).slice(0,3).forEach(function(c){
       out+=alertItem("🎉","Contemplação — "+clienteNome(c.cliente_id),(c.administradora||"")+" · gere o link e envie a mensagem.","vio");
     });
@@ -677,9 +721,10 @@ window.APP=(function(){
   function empresaNome(){return (S.config&&(S.config.nome_empresa||S.config.empresa))||(S.org&&S.org.nome)||"";}
   function admsCli(id){return uniqSort(contratosCli(id).map(function(k){return k.administradora;}));}
   function origemChip(c){
-    if(!c.origem)return "";
-    var auto=/auto[- ]?cadastro/i.test(c.origem||"")||((c.tags||[]).some(function(t){return /auto[- ]?cadastro/i.test(t);}));
-    return '<span class="badge '+(auto?"b-ok":"b-vio")+'" style="font-size:.6rem;padding:2px 6px">'+(auto?"🌱 ":"")+esc(c.origem)+'</span>';
+    if(!c.origem&&!c.canal)return "";
+    var auto=!!c.auto_cadastro||/auto[- ]?cadastro/i.test(c.origem||"")||((c.tags||[]).some(function(t){return /auto[- ]?cadastro/i.test(t);}));
+    var lab=c.canal?(canalInfo(c.canal).ic+" "+(c.origem||canalInfo(c.canal).n)):((auto?"🌱 ":"")+(c.origem||""));
+    return '<span class="badge '+(auto?"b-ok":"b-vio")+'" style="font-size:.6rem;padding:2px 6px">'+esc(lab)+'</span>';
   }
   function qaCliente(c){ /* ações rápidas: WhatsApp + ligar (tel:) */
     var wl=waLink(c.telefone,"Olá "+primeiroNome(c.nome)+"! Aqui é da equipe de consórcio."),te=telE164(c.telefone),out="";
@@ -838,7 +883,7 @@ window.APP=(function(){
     document.getElementById("view").innerHTML=
       '<div class="topbar"><div><button class="btn ghost sm" onclick="APP.voltarCli()">← Clientes</button><h1 style="margin-top:8px">'+esc(c.nome)+'</h1><p>Ficha 360 do cliente.</p></div>'+
         '<button class="act" title="Excluir cliente" onclick="APP.delCliente(\''+id+'\')" style="font-size:1rem">🗑</button></div>'+
-      head+kpis+
+      head+origemBox(c)+kpis+
       '<div class="grid2"><div>'+cardCt+cardVd+'</div><div><div class="card"><h2>Próxima ação</h2><div class="csub">O compromisso que mantém o cliente avançando.</div>'+foup+'</div>'+cardTl+'</div></div>';
   }
   function novaVendaCli(id){formVenda(null,{cliente_id:id});}
@@ -1393,6 +1438,409 @@ window.APP=(function(){
       if(r&&r.error){toast("Erro ao gerar link: "+r.error.message,"danger");return;}
       abrir(tok);
     });
+  }
+
+  /* ================= CAPTAÇÃO — CRM de leads (origem, campanhas, investimento) ================= */
+  var CANAIS={instagram:{n:"Instagram",ic:"📸",c:"#E1306C"},facebook:{n:"Facebook",ic:"📘",c:"#4C7DF0"},google:{n:"Google",ic:"🔎",c:"#34A853"},
+    tiktok:{n:"TikTok",ic:"🎵",c:"#25F4EE"},whatsapp:{n:"WhatsApp",ic:"💬",c:"#25D366"},indicacao:{n:"Indicação",ic:"🤝",c:"#C9A85C"},
+    site:{n:"Site / orgânico",ic:"🌐",c:"#9E9A90"}};
+  function canalInfo(k){return CANAIS[k]||{n:(k?k.charAt(0).toUpperCase()+k.slice(1):"Origem a confirmar"),ic:"•",c:"#7A766E"};}
+  function canalBadge(k){var i=canalInfo(k);return '<span class="badge" style="font-size:.62rem;padding:2px 8px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text)">'+i.ic+' '+esc(i.n)+'</span>';}
+  function isLead(c){return !!(c&&(c.auto_cadastro||c.canal||c.status==="lead"));}
+  /* lead que conta nos números (CPL, conversão, gráficos): fora os envios repetidos marcados "A revisar" */
+  function isLeadValido(c){return isLead(c)&&c.lead_etapa!=="suspeito";}
+  var ETAPAS_LEAD={novo:["Novo","b-warn"],contato:["Em contato","b-blue"],qualificado:["Qualificado","b-ok"],descartado:["Descartado","b-rose"],suspeito:["A revisar","b-rose"]};
+  function vendasAbertasCli(id){return S.vendas.filter(function(x){return x.cliente_id===id&&x.etapa!=="fechado"&&x.etapa!=="perdido";});}
+  function vendaFechadaCli(id){return S.vendas.some(function(x){return x.cliente_id===id&&x.etapa==="fechado";})||S.contratos.some(function(k){return k.cliente_id===id;});}
+  function etapaLead(c){if(c.lead_etapa==="descartado")return "descartado";if(vendaFechadaCli(c.id))return "venda";if(vendasAbertasCli(c.id).length)return "oportunidade";return c.lead_etapa||"novo";}
+  function etapaBadge(c){var e=etapaLead(c);if(e==="venda")return '<span class="badge b-ok">Venda</span>';if(e==="oportunidade")return '<span class="badge b-vio">Oportunidade</span>';var m=ETAPAS_LEAD[e]||ETAPAS_LEAD.novo;return '<span class="badge '+m[1]+'">'+m[0]+'</span>';}
+  /* Fila de 1º contato: do mais recente para o mais antigo — o lead que acabou de chegar é o mais quente. */
+  function leadsPendentes(){return S.clientes.filter(function(c){return isLead(c)&&!c.respondido_em&&(c.lead_etapa||"novo")==="novo"&&!vendaFechadaCli(c.id)&&!vendasAbertasCli(c.id).length;})
+    .sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at));});}
+  function capPer(){return S._capPer||30;}
+  function capIni(){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(capPer()-1));return d;}
+  function noPer(ts){return !!ts&&new Date(ts)>=capIni();}
+  function isoLocal(x){return x.getFullYear()+"-"+("0"+(x.getMonth()+1)).slice(-2)+"-"+("0"+x.getDate()).slice(-2);}
+  function noPerData(dt){return !!dt&&String(dt).slice(0,10)>=isoLocal(capIni());}
+  function noDias(ts,n){if(!ts)return false;var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(n-1));return new Date(ts)>=d;}
+  function fmtMin(m){if(m==null||isNaN(m))return "—";if(m<1)return "agora";if(m<60)return Math.round(m)+" min";if(m<1440)return (m/60).toFixed(1).replace(".",",")+" h";return (m/1440).toFixed(1).replace(".",",")+" dias";}
+  function espera(ts){return fmtMin((Date.now()-new Date(ts))/60000);}
+  function dtHora(ts){if(!ts)return "—";var x=new Date(ts);return ("0"+x.getDate()).slice(-2)+"/"+("0"+(x.getMonth()+1)).slice(-2)+" "+("0"+x.getHours()).slice(-2)+":"+("0"+x.getMinutes()).slice(-2);}
+  function refHost(r){try{return r?new URL(r).host:"";}catch(_){return "";}}
+  function slugify(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60);}
+  function chartDaily(dias,vals,aria){
+    var W=520,H=176,padL=34,padR=10,padT=14,padB=28,iw=W-padL-padR,ih=H-padT-padB,n=vals.length||1;
+    var max=Math.max.apply(null,vals.concat([1])),bw=Math.max(3,iw/n*0.62),y=function(v){return padT+ih-(v/max)*ih;};
+    var step=Math.ceil(n/8),bars="",xl="",grid="";
+    for(var i=0;i<vals.length;i++){var cx=padL+(i+.5)*iw/n;
+      bars+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y(vals[i]).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(padT+ih-y(vals[i])).toFixed(1)+'" rx="2" fill="var(--blue)"><title>'+esc(dias[i])+': '+vals[i]+'</title></rect>';
+      if(i%step===0||(i===vals.length-1&&(vals.length-1)%step>=Math.ceil(step/2)))xl+='<text x="'+cx.toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9" fill="var(--muted2)">'+esc(dias[i])+'</text>';}
+    for(var g=0;g<=2;g++){var gy=padT+ih-(g/2)*ih;grid+='<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="var(--border2)"/><text x="'+(padL-5)+'" y="'+(gy+3)+'" text-anchor="end" font-size="9" fill="var(--muted2)">'+fmtK(max*g/2)+'</text>';}
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(aria||"Série diária")+'">'+grid+bars+xl+'</svg>';
+  }
+  function chartHBars(items,base){ /* items: {lab,n,cor,fmt}; base = referência do % (padrão: soma) */
+    var max=Math.max.apply(null,items.map(function(i){return i.n;}).concat([1]));
+    var tot=base||items.reduce(function(s,i){return s+i.n;},0)||1;
+    var rowH=28,W=520,barX=136,barW=W-barX-118,H=items.length*rowH+8;
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Distribuição">'+items.map(function(it,i){var yy=4+i*rowH,w=Math.max(2,(it.n/max)*barW);
+      return '<text x="0" y="'+(yy+18)+'" font-size="11" fill="var(--muted)">'+esc(it.lab)+'</text>'+
+        '<rect x="'+barX+'" y="'+(yy+6)+'" width="'+barW+'" height="16" rx="4" fill="var(--border)"/>'+
+        '<rect x="'+barX+'" y="'+(yy+6)+'" width="'+w.toFixed(1)+'" height="16" rx="4" fill="'+(it.cor||"var(--blue)")+'"/>'+
+        '<text x="'+(barX+barW+8)+'" y="'+(yy+18)+'" font-size="10.5" fill="var(--text)">'+esc(it.fmt||String(it.n))+' · '+Math.round(it.n/tot*100)+'%</text>';}).join("")+'</svg>';
+  }
+  function capDados(){
+    var leads=S.clientes.filter(function(c){return isLeadValido(c)&&noPer(c.created_at);});
+    var gastos=(S.midia_gastos||[]).filter(function(g){return noPerData(g.data);});
+    var investido=gastos.reduce(function(s,g){return s+(+g.valor||0);},0);
+    var vendas=S.vendas.filter(function(x){if(x.etapa!=="fechado"||!noPerData(x.data_fechamento))return false;var c=S.clientes.find(function(k){return k.id===x.cliente_id;});return isLead(c);});
+    var convertidos=leads.filter(function(c){return vendaFechadaCli(c.id);}).length;
+    var resp=leads.filter(function(c){return c.respondido_em;}).map(function(c){return (new Date(c.respondido_em)-new Date(c.created_at))/60000;}).filter(function(m){return m>=0;});
+    return {leads:leads,gastos:gastos,investido:investido,vendas:vendas,convertidos:convertidos,
+      tResp:resp.length?resp.reduce(function(s,m){return s+m;},0)/resp.length:null,
+      credito:vendas.reduce(function(s,x){return s+(+x.valor_credito||0);},0),comissao:vendas.reduce(function(s,x){return s+(+x.comissao||0);},0)};
+  }
+  function capPorCampanha(d){
+    var rows={};
+    function row(k){if(!rows[k]){var cp=(S.campanhas||[]).find(function(x){return x.id===k;});rows[k]={nome:cp?cp.nome:"Orgânico / direto",canal:cp?cp.canal:"",leads:0,inv:0,vendas:0,credito:0};}return rows[k];}
+    d.leads.forEach(function(c){row(c.campanha_id||"_").leads++;});
+    d.gastos.forEach(function(g){row(g.campanha_id||"_").inv+=(+g.valor||0);});
+    d.vendas.forEach(function(x){var c=S.clientes.find(function(k){return k.id===x.cliente_id;});var r=row((c&&c.campanha_id)||"_");r.vendas++;r.credito+=(+x.valor_credito||0);});
+    return Object.keys(rows).map(function(k){return rows[k];}).sort(function(a,b){return b.leads-a.leads||b.inv-a.inv;});
+  }
+  function tabelaCampanhas(linhas){
+    if(!linhas.length)return '<div class="empty">Crie uma campanha em <b>＋ Campanha</b> e use o link rastreável nos anúncios, posts e na bio — cada lead chega marcado com a campanha e o resultado aparece aqui.</div>';
+    return '<table><thead><tr><th>Campanha</th><th>Canal</th><th class="r">Leads</th><th class="r">Investido</th><th class="r">Custo/lead</th><th class="r">Vendas</th><th class="r">Custo/venda</th><th class="r">Crédito vendido</th></tr></thead><tbody>'+
+      linhas.map(function(r){return '<tr><td><b>'+esc(r.nome)+'</b></td><td>'+(r.canal?canalBadge(r.canal):'<span style="color:var(--muted2)">—</span>')+'</td><td class="num r">'+r.leads+'</td><td class="num r">'+(r.inv?BRL(r.inv):"—")+'</td><td class="num r">'+(r.inv&&r.leads?BRL(r.inv/r.leads):"—")+'</td><td class="num r">'+r.vendas+'</td><td class="num r">'+(r.inv&&r.vendas?BRL(r.inv/r.vendas):"—")+'</td><td class="num r">'+(r.credito?BRL(r.credito):"—")+'</td></tr>';}).join("")+'</tbody></table>';
+  }
+  function filaLeads(list){
+    if(!list.length)return '<div class="empty">Fila em dia: todo lead já recebeu o primeiro contato. 👌</div>';
+    return list.map(function(c){
+      var min=(Date.now()-new Date(c.created_at))/60000, cls=min>60?"b-rose":min>15?"b-warn":"b-ok";
+      return '<div class="qlead"><div class="avatar-s">'+ini(c.nome)+'</div><div style="flex:1;min-width:0">'+
+        '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button type="button" class="linkcli" onclick="APP.abrirCli(\''+c.id+'\')" title="Abrir a Ficha 360">'+esc(c.nome)+'</button>'+canalBadge(c.canal||"site")+'<span class="badge '+cls+'" style="font-size:.6rem;padding:2px 7px">⏱ '+espera(c.created_at)+'</span></div>'+
+        '<div style="color:var(--muted);font-size:.78rem;margin-top:3px">'+esc([c.interesse,c.faixa].filter(Boolean).join(" · ")||"Interesse a confirmar")+(c.simulacao?' · <span style="color:var(--blue-l)">'+esc(c.simulacao)+'</span>':"")+'</div>'+
+        '<div class="acts">'+(c.telefone?'<button class="btn sm" onclick="APP.leadWhats(\''+c.id+'\')">💬 Chamar no WhatsApp</button>':"")+
+          '<button class="btn ghost sm" onclick="APP.leadEtapa(\''+c.id+'\',\'contato\')">Já falei</button>'+
+          '<button class="btn ghost sm" onclick="APP.leadEtapa(\''+c.id+'\',\'descartado\')">Descartar</button></div>'+
+      '</div></div>';}).join("");
+  }
+  function renderCaptacao(){
+    var tab=S._capTab||"geral", pend=leadsPendentes();
+    var tabs='<div class="ctabs" role="group" aria-label="Seções da Captação">'+[["geral","Visão geral"],["leads","Leads"],["campanhas","Campanhas"],["invest","Investimento"]].map(function(t){
+      return '<button aria-pressed="'+(tab===t[0])+'" class="'+(tab===t[0]?"on":"")+'" onclick="APP.capTab(\''+t[0]+'\')">'+t[1]+
+        (t[0]==="leads"&&pend.length?' <span class="badge b-warn" style="font-size:.6rem;padding:1px 7px;margin-left:4px">'+pend.length+'</span>':"")+'</button>';}).join("")+'</div>';
+    var per=(tab==="campanhas")?"":'<div class="ctabs perbar" role="group" aria-label="Período">'+[[7,"7 dias"],[30,"30 dias"],[90,"90 dias"]].map(function(p){return '<button aria-pressed="'+(capPer()===p[0])+'" class="'+(capPer()===p[0]?"on":"")+'" onclick="APP.capSetPer('+p[0]+')">'+p[1]+'</button>';}).join("")+'</div>';
+    var btn=canE("captacao")?'<button class="btn ghost" onclick="APP.formGasto()">＋ Investimento</button> <button class="btn" onclick="APP.formCampanha()">＋ Campanha</button>':"";
+    var body=tab==="leads"?capLeads(pend):tab==="campanhas"?capCampanhas():tab==="invest"?capInvest():capGeral(capDados(),pend);
+    document.getElementById("view").innerHTML=topbar("Captação","Leads, campanhas e investimento — do anúncio à venda, num só lugar.",btn)+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'+tabs+per+'</div>'+body;
+  }
+  function capGeral(d,pend){
+    var nL=d.leads.length, cpl=nL?d.investido/nL:0, cpv=d.vendas.length?d.investido/d.vendas.length:0, conv=nL?Math.round(d.convertidos/nL*1000)/10:0;
+    var dias=[],vals=[],ini0=capIni();
+    for(var i=0;i<capPer();i++){var x=new Date(ini0);x.setDate(ini0.getDate()+i);var key=isoLocal(x);
+      dias.push(("0"+x.getDate()).slice(-2)+"/"+("0"+(x.getMonth()+1)).slice(-2));
+      vals.push(d.leads.filter(function(c){return isoLocal(new Date(c.created_at))===key;}).length);}
+    var porCanal={};d.leads.forEach(function(c){var k=c.canal||"site";porCanal[k]=(porCanal[k]||0)+1;});
+    var canItems=Object.keys(porCanal).sort(function(a,b){return porCanal[b]-porCanal[a];}).map(function(k){var ci=canalInfo(k);return {lab:ci.ic+" "+ci.n,n:porCanal[k],cor:ci.c};});
+    var et={novo:0,contato:0,qualificado:0,oportunidade:0,venda:0};
+    d.leads.forEach(function(c){var e=etapaLead(c);if(et[e]!=null)et[e]++;});
+    var ativos=et.novo+et.contato+et.qualificado+et.oportunidade+et.venda;
+    var fun=[{lab:"Leads",n:ativos},{lab:"Em contato",n:et.contato+et.qualificado+et.oportunidade+et.venda},{lab:"Qualificados",n:et.qualificado+et.oportunidade+et.venda},{lab:"Oportunidades",n:et.oportunidade+et.venda},{lab:"Vendas",n:et.venda,cor:"var(--ok)"}];
+    return '<div class="kpis k3">'+
+        kpi("Leads no período",n0(nL),"últimos "+capPer()+" dias","accent")+
+        kpi("Custo por lead",d.investido&&nL?BRL(cpl):"—",d.investido?("investido "+BRL(d.investido)):"lance o investimento em anúncio","")+
+        kpi("Conversão lead → venda",String(conv).replace(".",",")+"%",d.convertidos+" lead(s) viraram venda","")+
+        kpi("Custo por venda",d.vendas.length&&d.investido?BRL(cpv):"—",d.vendas.length+" venda(s) originada(s)","")+
+        kpi("1ª resposta (média)",fmtMin(d.tResp),pend.length?(pend.length+" aguardando agora"):"fila em dia",pend.length?"accent":"")+
+        kpi("Crédito vendido",BRL(d.credito),"comissão "+BRL(d.comissao),"")+
+      '</div>'+
+      '<div class="charts">'+
+        '<div class="chartcard"><h2>Leads por dia</h2><div class="csub">Contatos que chegaram pelo site, pelo simulador e pelas campanhas.</div>'+chartDaily(dias,vals,"Leads por dia")+'</div>'+
+        '<div class="chartcard"><h2>De onde vêm os leads</h2><div class="csub">Canal de origem no período.</div>'+(canItems.length?chartHBars(canItems):'<div class="empty">Os leads do período aparecem aqui, separados por canal.</div>')+'</div>'+
+        '<div class="chartcard"><h2>Funil do lead</h2><div class="csub">Quantos avançaram em cada etapa.</div>'+chartHBars(fun,ativos||1)+'</div>'+
+        '<div class="chartcard"><h2>Aguardando 1º contato</h2><div class="csub">Quanto mais rápido o retorno, maior a chance de venda.</div>'+filaLeads(pend.slice(0,4))+
+          (pend.length>4?'<button class="btn ghost sm" style="margin-top:8px" onclick="APP.capTab(\'leads\')">Ver todos ('+pend.length+')</button>':"")+'</div>'+
+      '</div>'+
+      '<div class="card"><h2>Desempenho por campanha</h2><div class="csub">Leads, investimento e resultado de cada campanha no período.</div>'+tabelaCampanhas(capPorCampanha(d))+'</div>';
+  }
+  function capLeads(pend){
+    var f=S._capF||{};
+    var todos=S.clientes.filter(isLead).filter(function(c){
+      if(f.canal&&(c.canal||"site")!==f.canal)return false;
+      if(f.etapa&&etapaLead(c)!==f.etapa)return false;
+      if(!f.etapa&&c.lead_etapa==="suspeito")return false;  /* "A revisar" aparece só no filtro próprio */
+      if(f.camp&&(c.campanha_id||"_")!==f.camp)return false;
+      if(f.q){var q=String(f.q).toLowerCase();if([c.nome,c.telefone,c.email,c.cidade,c.simulacao,c.utm_campaign].join(" ").toLowerCase().indexOf(q)<0)return false;}
+      return true;}).sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at));});
+    var canais=uniqSort(S.clientes.filter(isLead).map(function(c){return c.canal||"site";}));
+    var sel=function(campo,opts,val,ph){return '<select onchange="APP.capFiltro(\''+campo+'\',this.value)"><option value="">'+ph+'</option>'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===val?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select>';};
+    return (pend.length?'<div class="card"><h2>Aguardando 1º contato ('+pend.length+')</h2><div class="csub">Do mais recente para o mais antigo — responda primeiro quem acabou de chegar.</div>'+filaLeads(pend)+'</div>':"")+
+      '<div class="card"><div class="tools">'+
+        '<input id="capBusca" placeholder="Buscar nome, telefone, cidade, simulação..." value="'+esc(f.q||"")+'" oninput="APP.capFiltro(\'q\',this.value)">'+
+        sel("canal",canais.map(function(k){return [k,canalInfo(k).n];}),f.canal,"Todos os canais")+
+        sel("etapa",[["novo","Novo"],["contato","Em contato"],["qualificado","Qualificado"],["oportunidade","Oportunidade"],["venda","Venda"],["descartado","Descartado"],["suspeito","A revisar (envio repetido)"]],f.etapa,"Todas as etapas")+
+        sel("camp",[["_","Orgânico / direto"]].concat((S.campanhas||[]).map(function(cp){return [cp.id,cp.nome];})),f.camp,"Todas as campanhas")+
+        '<span class="pill">'+todos.length+' lead(s)</span></div>'+
+      '<table><thead><tr><th>Lead</th><th>Canal</th><th>Campanha</th><th>Etapa</th><th>Chegou</th><th>1ª resposta</th><th>Ações</th></tr></thead><tbody>'+
+      (todos.length?todos.map(function(c){var cp=(S.campanhas||[]).find(function(x){return x.id===c.campanha_id;});
+        return '<tr class="clk" onclick="APP.abrirCli(\''+c.id+'\')"><td><div class="person"><div class="avatar-s">'+ini(c.nome)+'</div><div><b>'+esc(c.nome)+'</b><span>'+esc([c.interesse,c.faixa].filter(Boolean).join(" · ")||c.telefone||"")+'</span></div></div></td>'+
+          '<td>'+canalBadge(c.canal||"site")+'</td><td>'+esc(cp?cp.nome:(c.utm_campaign||"—"))+'</td><td>'+etapaBadge(c)+'</td>'+
+          '<td class="num">'+dtHora(c.created_at)+'</td><td class="num">'+(c.respondido_em?fmtMin((new Date(c.respondido_em)-new Date(c.created_at))/60000):'<span class="badge b-warn" style="font-size:.6rem;padding:2px 7px">pendente</span>')+'</td>'+
+          '<td onclick="event.stopPropagation()">'+(c.telefone?'<button class="act" title="Chamar no WhatsApp" onclick="APP.leadWhats(\''+c.id+'\')">💬</button> ':"")+
+            '<button class="act" title="Qualificar" onclick="APP.leadEtapa(\''+c.id+'\',\'qualificado\')">✓</button> '+
+            '<button class="act" title="Criar oportunidade" onclick="APP.novaVendaCli(\''+c.id+'\')">💼</button></td></tr>';}).join("")
+       :'<tr><td colspan="7" class="empty">Os leads do site e das campanhas aparecem aqui assim que chegam.</td></tr>')+'</tbody></table></div>';
+  }
+  function linkCampanha(cp){
+    var base=location.origin+location.pathname.replace(/[^/]*$/,"")+"landing.html";
+    var med=(cp.canal==="indicacao"||cp.canal==="site")?"organico":"pago";
+    return base+"?utm_source="+encodeURIComponent(cp.canal||"site")+"&utm_medium="+med+"&utm_campaign="+encodeURIComponent(cp.utm_campaign);
+  }
+  function capCampanhas(){
+    var cs=(S.campanhas||[]).slice().sort(function(a,b){return String(b.created_at).localeCompare(String(a.created_at));});
+    return '<div class="card"><h2>Campanhas</h2><div class="csub">Cada campanha tem um link rastreável. Use esse link no anúncio, no post ou na bio — o lead chega com a campanha marcada.</div>'+
+      (cs.length?'<table><thead><tr><th>Campanha</th><th>Canal</th><th>Status</th><th class="r">Orçamento</th><th class="r">Investido</th><th class="r">Leads</th><th>Link rastreável</th><th></th></tr></thead><tbody>'+
+        cs.map(function(cp){var inv=(S.midia_gastos||[]).filter(function(g){return g.campanha_id===cp.id;}).reduce(function(s,g){return s+(+g.valor||0);},0);
+          var nl=S.clientes.filter(function(c){return c.campanha_id===cp.id;}).length;
+          var st={ativa:["Ativa","b-ok"],pausada:["Pausada","b-warn"],encerrada:["Encerrada","b-rose"]}[cp.status]||["—",""];
+          return '<tr><td><b>'+esc(cp.nome)+'</b><div style="color:var(--muted2);font-size:.72rem">'+esc(cp.utm_campaign)+(cp.inicio?(' · '+dBR(cp.inicio)+(cp.fim?' a '+dBR(cp.fim):"")):"")+'</div></td>'+
+            '<td>'+canalBadge(cp.canal)+'</td><td><span class="badge '+st[1]+'">'+st[0]+'</span></td>'+
+            '<td class="num r">'+(cp.orcamento?BRL(cp.orcamento):"—")+'</td><td class="num r">'+(inv?BRL(inv):"—")+'</td><td class="num r">'+nl+'</td>'+
+            '<td><button class="btn ghost sm" onclick="APP.copiarLinkCamp(\''+cp.id+'\')">🔗 Copiar link</button></td>'+
+            '<td>'+(canE("captacao")?'<button class="act" title="Editar campanha" onclick="APP.formCampanha(\''+cp.id+'\')">✎</button>':"")+'</td></tr>';}).join("")+'</tbody></table>'
+      :'<div class="empty">Crie a primeira campanha em <b>＋ Campanha</b>, dê um nome (ex.: "Imóvel Salvador — dezembro"), escolha o canal e copie o link rastreável.</div>')+'</div>';
+  }
+  function copiarLinkCamp(id){var cp=(S.campanhas||[]).find(function(x){return x.id===id;});if(!cp)return;
+    modal("Link rastreável da campanha",'<p style="color:var(--muted);font-size:.86rem;margin-bottom:10px">Campanha <b style="color:#fff">'+esc(cp.nome)+'</b>. Use este link no anúncio, no post ou na bio do Instagram: todo lead que chegar por ele entra no Cockpit marcado com esta campanha.</p>'+
+      '<div class="field"><label>Link</label><input id="lc_url" value="'+esc(linkCampanha(cp))+'" readonly onclick="this.select()"></div>'+
+      '<button class="btn sm" onclick="APP.copiarLinkCampOk()">📋 Copiar link</button>',null);}
+  function copiarLinkCampOk(){var el=document.getElementById("lc_url");if(!el)return;
+    var manual=function(motivo){try{el.focus();el.select();}catch(_){}toast("Copie manualmente: o link já está selecionado ("+motivo+").","warn");};
+    if(!(navigator.clipboard&&navigator.clipboard.writeText)){manual("navegador bloqueia a cópia automática");return;}
+    navigator.clipboard.writeText(el.value).then(function(){toast("Link copiado!","ok");},function(){manual("permissão de cópia recusada");});}
+  function formCampanha(id){
+    if(!canE("captacao")){toast("Edição de campanhas liberada para quem tem Captação em Editar — fale com o gestor.","warn");return;}
+    var cp=id?(S.campanhas||[]).find(function(x){return x.id===id;}):{canal:"instagram",status:"ativa",inicio:today()};if(!cp)return;
+    var optC=Object.keys(CANAIS).map(function(k){return '<option value="'+k+'"'+(cp.canal===k?" selected":"")+'>'+CANAIS[k].n+'</option>';}).join("");
+    var optS=[["ativa","Ativa"],["pausada","Pausada"],["encerrada","Encerrada"]].map(function(o){return '<option value="'+o[0]+'"'+(cp.status===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("");
+    modal(id?"Editar campanha":"Nova campanha",
+      '<div class="field"><label>Nome da campanha *</label><input id="cp_nome" maxlength="80" value="'+esc(cp.nome||"")+'" placeholder="Ex.: Imóvel Salvador — dezembro"></div>'+
+      '<div class="fgrid"><div class="field"><label>Canal</label><select id="cp_canal">'+optC+'</select></div><div class="field"><label>Status</label><select id="cp_status">'+optS+'</select></div></div>'+
+      '<div class="fgrid"><div class="field"><label>Orçamento previsto (R$)</label><input id="cp_orc" type="number" step="0.01" min="0" value="'+(cp.orcamento||"")+'"></div><div class="field"><label>Objetivo</label><input id="cp_obj" maxlength="120" value="'+esc(cp.objetivo||"")+'" placeholder="Ex.: leads de imóvel até R$ 200 mil"></div></div>'+
+      '<div class="fgrid"><div class="field"><label>Início</label><input id="cp_ini" type="date" value="'+esc(cp.inicio||"")+'"></div><div class="field"><label>Fim</label><input id="cp_fim" type="date" value="'+esc(cp.fim||"")+'"></div></div>'+
+      (id?'<div style="color:var(--muted2);font-size:.76rem">Código de rastreio: <b>'+esc(cp.utm_campaign)+'</b> — fixo, para os links já publicados continuarem valendo.</div>':""),
+      function(){
+        var nome=v("cp_nome").trim();if(!nome){toast("Informe o nome.","warn");return false;}
+        var obj={nome:nome,canal:v("cp_canal"),status:v("cp_status"),orcamento:Number(v("cp_orc"))||0,objetivo:v("cp_obj")||null,inicio:v("cp_ini")||null,fim:v("cp_fim")||null};
+        var p;salvando(true);
+        if(id){p=tbl("co_campanhas").update(obj).eq("id",id).eq("org_id",S.org.id);}
+        else{var base=slugify(nome)||"campanha",u=base,i=2;while((S.campanhas||[]).some(function(x){return x.utm_campaign===u;})){u=base+"-"+i;i++;}
+          obj.utm_campaign=u;obj.org_id=S.org.id;p=tbl("co_campanhas").insert(obj);}
+        p.then(function(r){if(r.error){salvando(false);toast(r.error.code==="23505"?"Já existe uma campanha com este código de rastreio — ajuste o nome.":"Erro ao salvar: "+r.error.message,"danger");return;}
+          reload("campanhas").then(function(){closeModal();toast(id?"Campanha atualizada.":"Campanha criada — copie o link rastreável.","ok");S._capTab="campanhas";renderCaptacao();});});
+        return false;
+      },id?'<button class="btn ghost sm" onclick="APP.delCampanha(\''+id+'\')">Excluir</button>':"");
+  }
+  function delCampanha(id){confirmModal("Excluir esta campanha? Os leads continuam no CRM; só perdem o vínculo com ela.",function(){
+    tbl("co_campanhas").delete().eq("id",id).eq("org_id",S.org.id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}
+      Promise.all([reload("campanhas"),reload("clientes"),reload("midia_gastos")]).then(function(){closeModal();toast("Campanha excluída.","ok");renderCaptacao();});});},"Excluir",true);}
+  function capInvest(){
+    var gs=(S.midia_gastos||[]).slice().sort(function(a,b){return String(b.data).localeCompare(String(a.data))||String(b.created_at).localeCompare(String(a.created_at));});
+    var meses=ultimosMeses(6),mLab=meses.map(mesLabel);
+    var serie=meses.map(function(m){return gs.filter(function(g){return mes(g.data)===m;}).reduce(function(s,g){return s+(+g.valor||0);},0);});
+    var porCanal={};gs.filter(function(g){return noPerData(g.data);}).forEach(function(g){porCanal[g.canal]=(porCanal[g.canal]||0)+(+g.valor||0);});
+    var itens=Object.keys(porCanal).sort(function(a,b){return porCanal[b]-porCanal[a];}).map(function(k){var ci=canalInfo(k);return {lab:ci.ic+" "+ci.n,n:porCanal[k],cor:ci.c,fmt:BRL(porCanal[k])};});
+    return '<div class="charts">'+
+        '<div class="chartcard"><h2>Investimento por mês</h2><div class="csub">Verba de anúncio lançada nos últimos 6 meses.</div>'+chartArea(mLab,serie)+'</div>'+
+        '<div class="chartcard"><h2>Investimento por canal</h2><div class="csub">No período selecionado.</div>'+(itens.length?chartHBars(itens):'<div class="empty">Lance o investimento em <b>＋ Investimento</b>.</div>')+'</div>'+
+      '</div>'+
+      '<div class="card"><h2>Lançamentos de investimento</h2><div class="csub">O valor investido nos anúncios de cada canal e campanha — é o que calcula o custo por lead e por venda.</div>'+
+      (gs.length?'<table><thead><tr><th>Data</th><th>Canal</th><th>Campanha</th><th class="r">Valor</th><th>Observação</th><th></th></tr></thead><tbody>'+gs.map(function(g){var cp=(S.campanhas||[]).find(function(x){return x.id===g.campanha_id;});
+        return '<tr><td class="num">'+dBR(g.data)+'</td><td>'+canalBadge(g.canal)+'</td><td>'+esc(cp?cp.nome:"—")+'</td><td class="num r">'+BRL(g.valor)+'</td><td style="color:var(--muted)">'+esc(g.obs||"")+'</td><td>'+(canE("captacao")?'<button class="act" title="Excluir lançamento" onclick="APP.delGasto(\''+g.id+'\')">🗑</button>':"")+'</td></tr>';}).join("")+'</tbody></table>'
+       :'<div class="empty">Registre a verba de cada canal em <b>＋ Investimento</b> (ex.: o valor cobrado pelo Meta Ads na semana).</div>')+'</div>';
+  }
+  function formGasto(){
+    if(!canE("captacao")){toast("Lançamento de investimento liberado para quem tem Captação em Editar — fale com o gestor.","warn");return;}
+    var optC=Object.keys(CANAIS).map(function(k){return '<option value="'+k+'">'+CANAIS[k].n+'</option>';}).join("");
+    var optCp='<option value="">Orgânico / direto</option>'+(S.campanhas||[]).filter(function(c){return c.status!=="encerrada";}).map(function(c){return '<option value="'+c.id+'">'+esc(c.nome)+'</option>';}).join("");
+    modal("Lançar investimento em anúncio",
+      '<div class="fgrid"><div class="field"><label>Data</label><input id="g_data" type="date" value="'+today()+'"></div><div class="field"><label>Valor (R$) *</label><input id="g_val" type="number" step="0.01" min="0"></div></div>'+
+      '<div class="fgrid"><div class="field"><label>Canal</label><select id="g_canal">'+optC+'</select></div><div class="field"><label>Campanha</label><select id="g_camp" onchange="APP.gastoCampChg(this.value)">'+optCp+'</select></div></div>'+
+      '<div class="field"><label>Observação</label><input id="g_obs" maxlength="120" placeholder="Ex.: fatura semanal do Meta Ads"></div>',
+      function(){var val=Number(v("g_val"));if(!(val>0)){toast("Informe o valor.","warn");return false;}
+        var obj={org_id:S.org.id,data:v("g_data")||today(),canal:v("g_canal"),campanha_id:v("g_camp")||null,valor:val,obs:v("g_obs")||null};
+        salvando(true);
+        tbl("co_midia_gastos").insert(obj).then(function(r){if(r.error){salvando(false);toast("Erro ao salvar: "+r.error.message,"danger");return;}
+          reload("midia_gastos").then(function(){closeModal();toast("Investimento lançado.","ok");S._capTab="invest";renderCaptacao();});});
+        return false;});
+  }
+  function gastoCampChg(id){var cp=(S.campanhas||[]).find(function(x){return x.id===id;});if(cp){var s=document.getElementById("g_canal");if(s)s.value=cp.canal;}}
+  function delGasto(id){confirmModal("Excluir este lançamento de investimento?",function(){tbl("co_midia_gastos").delete().eq("id",id).eq("org_id",S.org.id).then(function(r){
+    if(r.error){toast("Erro: "+r.error.message,"danger");return;}reload("midia_gastos").then(function(){closeModal();toast("Lançamento excluído.","ok");renderCaptacao();});});},"Excluir",true);}
+  function capTab(t){S._capTab=t;renderCaptacao();}
+  function capSetPer(n){S._capPer=n;renderCaptacao();}
+  function capFiltro(campo,val){S._capF=S._capF||{};S._capF[campo]=val;renderCaptacao();
+    if(campo==="q"){var i=document.getElementById("capBusca");if(i){i.focus();var L=i.value.length;try{i.setSelectionRange(L,L);}catch(_){}}}}
+  function leadWhats(id){
+    var c=S.clientes.find(function(x){return x.id===id;});if(!c)return;
+    var msg="Olá "+primeiroNome(c.nome)+"! Aqui é da "+(empresaNome()||"Elite Consultoria e Consórcios")+". Recebemos seu contato"+(c.simulacao?(" e a sua simulação ("+c.simulacao+")"):"")+". Posso te ajudar a encontrar o plano ideal?";
+    var wl=waLink(c.telefone,msg);if(wl)window.open(wl,"_blank","noopener");
+    leadEtapa(id,"contato",true);
+  }
+  function leadEtapa(id,et,viaWhats){
+    if(!canE("captacao")&&!canE("clientes")){toast("Edição de leads liberada para quem tem Captação ou Clientes em Editar — fale com o gestor.","warn");return;}
+    var c=S.clientes.find(function(x){return x.id===id;});if(!c)return;
+    var obj={lead_etapa:et};
+    if((et==="contato"||et==="qualificado")&&!c.respondido_em)obj.respondido_em=new Date().toISOString();
+    if(et==="descartado")obj.status="perdido";
+    else if(c.status==="perdido"&&c.lead_etapa==="descartado")obj.status="lead";  /* reativar lead descartado */
+    tbl("co_clientes").update(obj).eq("id",id).eq("org_id",S.org.id).then(function(r){
+      if(r.error){toast("Erro: "+r.error.message,"danger");return;}
+      Object.assign(c,obj);
+      var txt=et==="contato"?(viaWhats?"Primeiro contato pelo WhatsApp":"Primeiro contato registrado"):et==="qualificado"?"Lead qualificado":et==="descartado"?"Lead descartado":"Etapa do lead: "+et;
+      tbl("co_interacoes").insert({org_id:S.org.id,cliente_id:id,tipo:"captacao",corpo:txt,autor:(S.member&&S.member.nome)||(S.user&&S.user.email)||""}).then(function(r2){if(r2&&r2.error)toast("Etapa salva; o registro na linha do tempo ficou pendente ("+r2.error.message+").","warn");reload("interacoes");});
+      toast(txt+".","ok");atualizarBadgeLeads();
+      if(S._cur==="captacao")renderCaptacao();else if(S._cliAtual===id)renderClienteDetalhe(id);
+    });
+  }
+  function origemBox(c){
+    if(!(c.canal||c.utm_campaign||c.simulacao||c.landing_path||c.auto_cadastro))return "";
+    var cp=(S.campanhas||[]).find(function(x){return x.id===c.campanha_id;});
+    var rows=[["Canal",canalBadge(c.canal||"site")],["Campanha",esc(cp?cp.nome:(c.utm_campaign||"—"))],["Chegou em",dtHora(c.created_at)],
+      ["1ª resposta",c.respondido_em?(dtHora(c.respondido_em)+" · "+fmtMin((new Date(c.respondido_em)-new Date(c.created_at))/60000)):'<span class="badge b-warn" style="font-size:.6rem;padding:2px 7px">pendente</span>'],
+      ["Simulação no site",c.simulacao?'<span style="color:var(--blue-l)">'+esc(c.simulacao)+'</span>':"—"],
+      ["Página de entrada",esc(c.landing_path||"—")],["Veio de",esc(refHost(c.referrer)||"acesso direto")],["Etapa do lead",etapaBadge(c)]];
+    var pode=canE("captacao")||canE("clientes"), e=etapaLead(c), acts="";
+    if(pode){
+      if(!c.respondido_em&&c.telefone&&e==="novo")acts+='<button class="btn sm" onclick="APP.leadWhats(\''+c.id+'\')">💬 Primeiro contato</button>';
+      if(e==="novo"||e==="contato")acts+='<button class="btn ghost sm" onclick="APP.leadEtapa(\''+c.id+'\',\'qualificado\')">✓ Qualificar</button>';
+      if(e==="novo"||e==="contato"||e==="qualificado")acts+='<button class="btn ghost sm" onclick="APP.novaVendaCli(\''+c.id+'\')">💼 Criar oportunidade</button>';
+    }
+    return '<div class="card"><h2>Origem do lead</h2><div class="csub">Rastreada automaticamente pelo site e pelo cadastro.</div>'+
+      '<div class="orig">'+rows.map(function(r){return '<div><span>'+r[0]+'</span><div>'+r[1]+'</div></div>';}).join("")+'</div>'+
+      (acts?'<div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">'+acts+'</div>':"")+'</div>';
+  }
+  function atualizarBadgeLeads(){
+    var b=document.querySelector('nav.menu [data-go="captacao"]');if(!b)return;
+    var n=leadsPendentes().length,s=b.querySelector(".nbadge");
+    if(!s){s=document.createElement("span");s.className="nbadge";b.appendChild(s);}
+    s.textContent=n>99?"99+":String(n);s.style.display=n?"":"none";s.setAttribute("aria-label",n+" lead(s) aguardando contato");
+  }
+  var _rt=null;
+  function ligarRealtime(){
+    try{
+      if(_rt||!SB||!SB.channel||!S.org)return;
+      _rt=SB.channel("leads-"+S.org.id).on("postgres_changes",{event:"INSERT",schema:"consorcio",table:"co_clientes",filter:"org_id=eq."+S.org.id},function(p){
+        var c=p&&p.new;if(!c||c.org_id!==S.org.id)return;
+        if(!S.clientes.some(function(x){return x.id===c.id;}))S.clientes.push(c);
+        if(isLeadValido(c))toast("📣 Novo lead: "+(c.nome||"")+" · "+canalInfo(c.canal||"site").n,"ok");
+        atualizarBadgeLeads();
+        if(S._cur==="captacao")renderCaptacao();else if(S._cur==="clientes"&&!S._cliAtual)renderClientes();
+      }).subscribe();
+    }catch(_){}
+  }
+
+  /* ================= INSTAGRAM (conexão oficial com a Meta) ================= */
+  var IG_FN="consorcio-instagram";
+  /* códigos fixos devolvidos pela Edge Function no retorno da Meta (texto livre na URL = vetor de phishing) */
+  var IG_ERROS={state:"o link de autorização expirou — clique em Conectar Instagram de novo.",cancelado:"a autorização foi cancelada na tela da Meta.",sem_code:"a Meta encerrou sem devolver a autorização — tente de novo.",papel:"a conexão é feita pelo gestor da empresa.",sem_conta:"conecte uma conta profissional do Instagram ligada a uma Página do Facebook e tente de novo.",gravar:"o servidor recusou a gravação — tente de novo em instantes.",falha:"a Meta respondeu com erro — tente de novo em instantes."};
+  function igConta(){return (S.social_contas||[]).find(function(c){return c.plataforma==="instagram";})||null;}
+  function igChamar(acao){
+    return SB.auth.getSession().then(function(s){var tk=s&&s.data&&s.data.session&&s.data.session.access_token;
+      return fetch(CFG.supabaseUrl+"/functions/v1/"+IG_FN+"?acao="+encodeURIComponent(acao),{method:"POST",
+        headers:{"Authorization":"Bearer "+tk,"apikey":CFG.supabaseKey,"Content-Type":"application/json"},
+        body:JSON.stringify({org_id:S.org.id,volta:location.origin+location.pathname})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){if(!r.ok&&!j.erro)j.erro="O conector respondeu "+r.status+".";return j;});});
+    });
+  }
+  function igConectar(){
+    if(!isGestor()){toast("A conexão do Instagram é feita pelo gestor da empresa.","warn");return;}
+    toast("Abrindo a autorização da Meta…","ok");
+    igChamar("conectar").then(function(j){if(j&&j.url&&/^https:\/\/www\.facebook\.com\//.test(j.url)){location.href=j.url;return;}
+      toast((j&&j.erro)||"A conexão ficou pendente — tente de novo.","danger");}).catch(function(){toast("Falha de rede ao falar com o conector.","danger");});
+  }
+  function igSincronizar(){
+    toast("Atualizando dados do Instagram…","ok");
+    igChamar("sincronizar").then(function(j){
+      if(j&&j.ok){Promise.all([reload("social_contas"),reload("social_metricas"),reload("social_posts")]).then(function(){toast("Instagram atualizado.","ok");if(S._cur==="instagram")renderInstagram();});return;}
+      toast((j&&j.erro)||"Atualização pendente — tente de novo.","danger");}).catch(function(){toast("Falha de rede ao falar com o conector.","danger");});
+  }
+  function igDesconectar(){confirmModal("Desconectar o Instagram da Elite? Os números já salvos ficam no histórico.",function(){
+    igChamar("desconectar").then(function(j){closeModal();if(j&&j.ok){reload("social_contas").then(function(){toast("Instagram desconectado.","ok");renderInstagram();});}
+      else toast((j&&j.erro)||"A desconexão ficou pendente — tente de novo.","danger");}).catch(function(){toast("Falha de rede ao falar com o conector.","danger");});},"Desconectar",true);}
+  function igEng(p){return (+p.interacoes)||((+p.curtidas||0)+(+p.comentarios||0)+(+p.salvos||0)+(+p.compartilhamentos||0));}
+  function tipoPost(t){return {VIDEO:"Reels",REELS:"Reels",CAROUSEL_ALBUM:"Carrossel",IMAGE:"Foto"}[t]||t||"Post";}
+  function igDadosReais(conta){
+    var met=(S.social_metricas||[]).slice().sort(function(a,b){return String(a.data).localeCompare(String(b.data));});
+    var m30=met.filter(function(m){return noDias(m.data+"T12:00:00",30);});
+    var soma=function(k){return m30.reduce(function(s,m){return s+(+m[k]||0);},0);};
+    var base=m30.filter(function(m){return m.seguidores!=null;})[0];
+    // visitas/cliques: a Meta devolve o total móvel de 30 dias; vale a linha mais recente que tiver o número
+    var ult=function(k){for(var i=m30.length-1;i>=0;i--){if(m30[i][k]!=null)return +m30[i][k]||0;}return 0;};
+    return {exemplo:false,username:conta.username,nome:conta.nome,foto:conta.foto_url,seguidores:conta.seguidores||0,
+      delta:(base&&conta.seguidores!=null)?(conta.seguidores-base.seguidores):null,
+      alcance:soma("alcance"),visitas:ult("visitas_perfil"),cliques:ult("cliques_site"),
+      lab:m30.map(function(m){return dBR(m.data).slice(0,5);}),alc:m30.map(function(m){return +m.alcance||0;}),
+      posts:(S.social_posts||[]).slice().sort(function(a,b){return String(b.publicado_em).localeCompare(String(a.publicado_em));}),sync:conta.sincronizado_em};
+  }
+  function igDadosExemplo(){
+    var lab=[],alc=[],s0=4620,seg=s0;
+    for(var i=29;i>=0;i--){var x=new Date();x.setDate(x.getDate()-i);lab.push(("0"+x.getDate()).slice(-2)+"/"+("0"+(x.getMonth()+1)).slice(-2));
+      alc.push(900+Math.round(420*Math.sin(i/3.1))+((i*37)%7)*55);seg+=4+((i*13)%9);}
+    var tipos=["REELS","CAROUSEL_ALBUM","IMAGE","REELS","CAROUSEL_ALBUM","REELS","IMAGE","REELS"];
+    var leg=["Como funciona a contemplação","Imóvel ou carro: qual consórcio?","Cliente contemplado 🎉","3 mitos sobre consórcio","Simule sua parcela no site","Lance embutido, explicado","Conheça a equipe Elite","Consórcio x financiamento"];
+    var posts=tipos.map(function(t,i){var d=new Date();d.setDate(d.getDate()-(i*3+1));var a=1800+((i*7919)%2600);
+      return {tipo:t,legenda:leg[i],publicado_em:d.toISOString(),curtidas:Math.round(a*0.06),comentarios:Math.round(a*0.008)+2,alcance:a,salvos:Math.round(a*0.02),compartilhamentos:Math.round(a*0.012)};});
+    return {exemplo:true,username:"eliteconsultoriaeconsorcios",nome:"Elite Consultoria e Consórcios",foto:null,seguidores:seg,delta:seg-s0,
+      alcance:alc.reduce(function(s,v){return s+v;},0),visitas:1284,cliques:212,lab:lab,alc:alc,posts:posts,sync:null};
+  }
+  function igPostCard(p,isTop){
+    var ok=function(u){return u&&/^https:\/\//.test(u);};
+    var th=ok(p.thumb_url)?'<img class="th" src="'+esc(p.thumb_url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">'
+      :'<div class="th ph">'+({REELS:"🎬",VIDEO:"🎬",CAROUSEL_ALBUM:"🖼️"}[p.tipo]||"📷")+'</div>';
+    return '<div class="igpost">'+(ok(p.permalink)?'<a href="'+esc(p.permalink)+'" target="_blank" rel="noopener" aria-label="Abrir post no Instagram">'+th+'</a>':th)+
+      '<div class="mt"><span style="grid-column:1/-1;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(isTop?"🏆 ":"")+esc(p.legenda||tipoPost(p.tipo))+'</span>'+
+      '<span>❤️ <b>'+n0(p.curtidas)+'</b></span><span>💬 <b>'+n0(p.comentarios)+'</b></span><span>👁 <b>'+n0(p.alcance)+'</b></span><span>🔖 <b>'+n0(p.salvos)+'</b></span>'+
+      '<span style="grid-column:1/-1;color:var(--muted2)">'+dBR(String(p.publicado_em||"").slice(0,10))+' · '+esc(tipoPost(p.tipo))+'</span></div></div>';
+  }
+  function renderInstagram(){
+    var conta=igConta(), conectado=!!(conta&&conta.status==="conectado");
+    var d=conectado?igDadosReais(conta):igDadosExemplo();
+    var acoes=conectado?('<button class="btn ghost" onclick="APP.igSincronizar()">↻ Atualizar agora</button>'+(isGestor()?' <button class="btn ghost" onclick="APP.igDesconectar()">Desconectar</button>':""))
+      :(isGestor()?'<button class="btn" onclick="APP.igConectar()">📸 Conectar Instagram</button>':"");
+    var ex=d.exemplo?' <span class="demo-tag">exemplo</span>':"";
+    var leads30=S.clientes.filter(function(c){return c.canal==="instagram"&&c.lead_etapa!=="suspeito"&&noDias(c.created_at,30);});
+    var opp=leads30.filter(function(c){return vendasAbertasCli(c.id).length||vendaFechadaCli(c.id);}).length,vend=leads30.filter(function(c){return vendaFechadaCli(c.id);}).length;
+    var ult=d.posts.slice(0,12),engMed=ult.length?Math.round(ult.reduce(function(s,p){return s+igEng(p);},0)/ult.length):0;
+    var top=d.posts.slice().sort(function(a,b){return igEng(b)-igEng(a);}).slice(0,3);
+    var aviso=conectado?"":'<div class="card" style="background:linear-gradient(150% 130% at 85% 0%,#2A2110,#141416 60%);border-color:#5C4A22">'+
+      '<h2>Conecte o Instagram da Elite</h2><div class="csub" style="margin-bottom:6px">Conexão oficial com a Meta: o responsável pela conta autoriza uma única vez e os números passam a atualizar aqui.</div>'+
+      '<ul style="color:var(--muted);font-size:.84rem;line-height:1.7;padding-left:18px"><li>A conta precisa ser <b style="color:#fff">profissional</b> (comercial ou criador de conteúdo) e ligada a uma <b style="color:#fff">Página do Facebook</b>.</li>'+
+      '<li>A Elite segue dona da conta. O Cockpit lê seguidores, alcance e o desempenho das postagens.</li></ul>'+
+      (conta&&conta.status==="erro"?'<div style="margin-top:8px"><span class="badge b-rose">Última tentativa: '+esc(conta.erro||"erro")+'</span></div>':"")+
+      '<div style="margin-top:10px"><span class="demo-tag">Abaixo, uma prévia com dados de exemplo</span></div></div>';
+    var perfil='<div class="card"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">'+
+      (d.foto&&/^https:\/\//.test(d.foto)?'<img src="'+esc(d.foto)+'" alt="" referrerpolicy="no-referrer" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--blue)">':'<div class="avatar-s" style="width:56px;height:56px;font-size:1.3rem;flex:none">📸</div>')+
+      '<div style="flex:1;min-width:200px"><h2 style="margin:0;color:#fff;font-size:1.1rem">@'+esc(d.username||"")+ex+'</h2><div style="color:var(--muted);font-size:.82rem">'+esc(d.nome||"")+'</div>'+
+      '<div style="color:var(--muted2);font-size:.76rem;margin-top:3px">'+(d.exemplo?"Números de exemplo — conecte o Instagram para ver os reais.":("Atualizado em "+dtHora(d.sync)))+'</div></div>'+
+      (d.username?'<a class="btn ghost sm" href="https://instagram.com/'+encodeURIComponent(d.username)+'" target="_blank" rel="noopener">Abrir perfil ↗</a>':"")+'</div></div>';
+    document.getElementById("view").innerHTML=topbar("Instagram","Seguidores, alcance e postagens — e quantos clientes o Instagram traz.",acoes)+aviso+perfil+
+      '<div class="kpis k3">'+
+        kpi("Seguidores",n0(d.seguidores),d.delta!=null?((d.delta>=0?"+":"")+n0(d.delta)+" em 30 dias"):"o histórico começa na 1ª sincronização","accent")+
+        kpi("Alcance · 30 dias",n0(d.alcance),"contas alcançadas","")+
+        kpi("Visitas ao perfil · 30 dias",n0(d.visitas),"","")+
+        kpi("Cliques no link · 30 dias",n0(d.cliques),"bio e botões de contato","")+
+        kpi("Leads do Instagram · 30 dias",n0(leads30.length),"já estão no CRM (dado real)",leads30.length?"accent":"")+
+        kpi("Engajamento médio",n0(engMed),"interações por post · últimos 12","")+
+      '</div>'+
+      '<div class="charts">'+
+        '<div class="chartcard"><h2>Alcance por dia'+ex+'</h2><div class="csub">Últimos 30 dias.</div>'+(d.alc.length?chartDaily(d.lab,d.alc,"Alcance por dia"):'<div class="empty">O alcance diário aparece após a primeira sincronização.</div>')+'</div>'+
+        '<div class="chartcard"><h2>Do Instagram para a venda</h2><div class="csub">Leads que chegaram pelo Instagram nos últimos 30 dias (dado real do CRM).</div>'+
+          chartHBars([{lab:"Leads",n:leads30.length},{lab:"Oportunidades",n:opp},{lab:"Vendas",n:vend,cor:"var(--ok)"}],leads30.length||1)+'</div>'+
+      '</div>'+
+      '<div class="card"><h2>Postagens recentes'+ex+'</h2><div class="csub">Desempenho de cada post. 🏆 marca os três com mais interação — boas ideias para os próximos anúncios.</div>'+
+        (d.posts.length?'<div class="igposts">'+d.posts.slice(0,12).map(function(p){return igPostCard(p,top.indexOf(p)>=0);}).join("")+'</div>':'<div class="empty">As postagens aparecem aqui após a primeira sincronização.</div>')+'</div>';
   }
 
   /* ================= PRODUTIVIDADE ================= */
@@ -2073,8 +2521,10 @@ window.APP=(function(){
   function modal(title,body,onSave,extraFoot){
     var ovl=document.createElement("div");ovl.className="ovl";ovl.id="mOvl";
     ovl.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h3>'+title+'</h3><div class="body">'+body+'</div><div class="foot2">'+(extraFoot||"")+'<button class="btn ghost" onclick="APP.closeModal()">Fechar</button>'+(onSave?'<button class="btn" id="mSave">Salvar</button>':"")+'</div></div>';
-    ovl.addEventListener("click",function(e){if(e.target===ovl)closeModal();});
-    ovl._esc=function(e){if(e.key==="Escape")closeModal();};
+    /* padrão do ecossistema: modal com dados (tem Salvar) não fecha no backdrop; nada fecha durante a gravação */
+    var gravando=function(){var b=document.getElementById("mSave");return !!(b&&b.disabled);};
+    ovl.addEventListener("click",function(e){if(e.target===ovl&&!onSave&&!gravando())closeModal();});
+    ovl._esc=function(e){if(e.key==="Escape"&&!gravando())closeModal();};
     document.addEventListener("keydown",ovl._esc);
     document.body.appendChild(ovl);
     if(onSave){document.getElementById("mSave").onclick=function(){onSave();};}
@@ -2184,10 +2634,38 @@ window.APP=(function(){
     document.getElementById("uEmail3").textContent=S.user.email||"";
     avatarBg(document.getElementById("uAv2"),nm);
   }
+  /* ---------- Novidades (todas as versões, da mais recente para a mais antiga) ---------- */
+  var NOVIDADES=[
+    {v:"1.1.0",d:"27/11/2026",t:"Captação, Instagram e o lead com origem",i:[
+      "Novo módulo Captação: leads por canal e por campanha, custo por lead, custo por venda e funil do anúncio até a venda.",
+      "Fila de primeiro contato: o lead que chega pelo site aparece na hora, com aviso e contador no menu.",
+      "Campanhas com link rastreável e lançamento do investimento em anúncio.",
+      "Novo módulo Instagram: conexão oficial com a Meta, seguidores, alcance, posts e os leads que vieram do Instagram.",
+      "Ficha 360 mostra a origem de cada lead: canal, campanha, página de entrada e a simulação feita no site.",
+      "Site com simulador de parcela e aviso de privacidade (LGPD)."]},
+    {v:"1.0.15",d:"27/11/2026",t:"Segurança reforçada",i:["Link do portal do cliente com chave criptográfica.","Endereços do sistema protegidos ao abrir links externos."]},
+    {v:"1.0.14",d:"27/11/2026",t:"Novo servidor de dados",i:["Cockpit religado ao servidor VIZIO, com acesso separado por empresa."]},
+    {v:"1.0",d:"07/2026",t:"Lançamento do Cockpit",i:["Dashboard, Clientes com Ficha 360, Vendas em funil, Contratos e Parcelas, Financeiro/DRE, Agenda e Recuperação.","Perfis e permissões por módulo, gestão da equipe e portal do cliente.","App instalável no celular e no computador."]}
+  ];
+  function abrirNovidades(){
+    try{localStorage.setItem("co_versao_vista",window.APP_VERSION);}catch(_){}
+    modal("Novidades do sistema",NOVIDADES.map(function(n,ix){return '<div style="padding:12px 0;'+(ix?'border-top:1px solid var(--border2)':'')+'">'+
+      '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="color:#fff">Versão '+n.v+'</b><span style="color:var(--muted2);font-size:.78rem">'+n.d+'</span>'+(ix===0?'<span class="badge b-warn" style="font-size:.6rem">ATUAL</span>':'')+'</div>'+
+      '<div style="color:var(--text);font-weight:600;margin:4px 0 6px">'+esc(n.t)+'</div>'+
+      '<ul style="margin:0;padding-left:18px;color:var(--muted);font-size:.86rem;line-height:1.55">'+n.i.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul></div>';}).join(""),null);
+  }
+  function novidadesAposAtualizar(){var vista=null;try{vista=localStorage.getItem("co_versao_vista");}catch(_){}
+    if(vista!==window.APP_VERSION)abrirNovidades();}  /* 1ª vez nesta versão (inclui quem veio da 1.0.x) */
   function startApp(){
     document.getElementById("login").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    buildMenus();paintUser();go("dashboard");bemBoot();
+    buildMenus();paintUser();
+    var qp=new URLSearchParams(location.search), igq=qp.get("ig");
+    go(igq?"instagram":"dashboard");bemBoot();
+    if(!igq)setTimeout(novidadesAposAtualizar,600);
+    if(igq){toast(igq==="ok"?"Instagram conectado! Os números aparecem aqui.":"A conexão com o Instagram ficou pendente: "+(IG_ERROS[qp.get("cod")]||IG_ERROS.falha),igq==="ok"?"ok":"danger");
+      if(history.replaceState)history.replaceState(null,"",location.pathname);}
+    ligarRealtime();
   }
   function afterAuth(user,_retry){
     UID=user.id;S.user=user;
@@ -2308,7 +2786,10 @@ window.APP=(function(){
     agMoverDia:agMoverDia,agMoverPer:agMoverPer,
     tfDragStart:tfDragStart,tfDrop:tfDrop,tfMoverEtapa:tfMoverEtapa,formTarefa:formTarefa,delTarefa:delTarefa,
     pausa:pausa,fimPausa:fimPausa,bemMaster:bemMaster,bemToggle:bemToggle,bemSetInt:bemSetInt,bemTestar:bemTestar,saveConfig:saveConfig,closeModal:closeModal,
-    equipeEditar:equipeEditar,equipeToggle:equipeToggle,equipeConvidar:equipeConvidar,equipePerfilChg:equipePerfilChg,equipeCancelarConvite:equipeCancelarConvite};
+    equipeEditar:equipeEditar,equipeToggle:equipeToggle,equipeConvidar:equipeConvidar,equipePerfilChg:equipePerfilChg,equipeCancelarConvite:equipeCancelarConvite,
+    capTab:capTab,capSetPer:capSetPer,capFiltro:capFiltro,formCampanha:formCampanha,delCampanha:delCampanha,copiarLinkCamp:copiarLinkCamp,copiarLinkCampOk:copiarLinkCampOk,abrirNovidades:abrirNovidades,
+    formGasto:formGasto,gastoCampChg:gastoCampChg,delGasto:delGasto,leadWhats:leadWhats,leadEtapa:leadEtapa,
+    igConectar:igConectar,igSincronizar:igSincronizar,igDesconectar:igDesconectar};
 })();
 document.addEventListener("DOMContentLoaded",APP.boot);
 if(document.readyState!=="loading")APP.boot();
@@ -2316,7 +2797,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.15';   /* §14.2: nunca const */
+window.APP_VERSION = '1.1.0';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.

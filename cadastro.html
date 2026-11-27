@@ -85,6 +85,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 </div>
 
 <script src="dados.js"></script>
+<script src="origem.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -92,7 +93,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   var CFG=(typeof DADOS!=="undefined"&&DADOS._cfg)?DADOS._cfg:{};
   var EMPRESA="a Elite"; // identidade da instância — nunca vem do banco (sem enumeração)
   function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  function q(name){var m=new RegExp("[?&]"+name+"=([^&]+)").exec(location.search);return m?decodeURIComponent(m[1]):"";}
+  function q(name){var m=new RegExp("[?&]"+name+"=([^&]+)").exec(location.search);if(!m)return "";try{return decodeURIComponent(m[1].replace(/\+/g," "));}catch(_){return "";}}
   function el(id){return document.getElementById(id);}
   function errFull(msg){el("content").innerHTML='<div class="err-full"><div style="font-size:2rem">🔒</div><b>'+esc(msg)+'</b><br><span style="font-size:.88rem">Confira o link com a empresa que o enviou.</span></div>';}
 
@@ -137,7 +138,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
           '<button class="btn" id="submit" type="submit">Quero saber mais →</button>'+
           '<div class="msg" id="msg"></div>'+
         '</form>'+
-        '<div class="priv">Seus dados são usados apenas para '+esc(EMPRESA)+' entrar em contato sobre seu consórcio.</div>'+
+        '<div class="priv">Seus dados são usados para '+esc(EMPRESA)+' entrar em contato sobre seu consórcio e medir por onde você chegou até nós. <a href="privacidade.html" target="_blank" rel="noopener" style="color:var(--gold-l,#E6D08A)">Política de privacidade</a>.</div>'+
       '</div>';
     el("f").addEventListener("submit",submit);
     // Pré-preenchimento vindo do simulador da landing (?interesse=&faixa=&sim=). Só aceita valores que existem nos selects.
@@ -150,6 +151,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   }
 
   function val(id){return (el(id)&&el(id).value||"").trim();}
+  // Origem do lead (canal/campanha/página) + simulação feita no site
+  function origem(){var o=(window.VZOrigem&&window.VZOrigem.get())||{};var s=q("sim");if(s)o.simulacao=s.slice(0,300);return o;}
   function showErr(m){var b=el("msg");b.className="msg err";b.textContent=m;}
 
   function submit(ev){
@@ -162,7 +165,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
     SB.rpc("cliente_autocadastro",{
       p_token:token, p_nome:nome, p_contato:tel||null, p_email:email||null,
       p_cidade:val("i_cidade")||null, p_interesse:val("i_interesse")||null,
-      p_faixa:val("i_faixa")||null, p_obs:val("i_obs")||null, p_hp:val("i_hp")||null
+      p_faixa:val("i_faixa")||null, p_obs:val("i_obs")||null, p_hp:val("i_hp")||null,
+      p_origem:origem()
     }).then(function(r){
       if(r.error||!r.data||r.data.ok!==true){
         btn.disabled=false; btn.textContent="Quero saber mais →";
