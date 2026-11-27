@@ -121,7 +121,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--blue-l);outline-off
   var token=q("t");
   if(!token){err("Link inválido.");return;}
   if(!CFG.supabaseUrl||!window.supabase){err("Serviço indisponível no momento.");return;}
-  var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+  var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{db:{schema:"consorcio"}});
 
   SB.rpc("portal_contrato",{p_token:token}).then(function(r){
     if(r.error||!r.data){err("Não encontramos este acompanhamento.");return;}

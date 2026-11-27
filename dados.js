@@ -11,9 +11,9 @@ const DADOS = {
     instancia: "Elite Consultoria e Consórcios",
     propLabel: "Consorciado",
     trialDays: 0,
-    // Projeto Supabase DEDICADO da Elite: elite-consorcio (sa-east-1, ref wcjvmgmxizhwaolyusvx).
-    supabaseUrl: "https://wcjvmgmxizhwaolyusvx.supabase.co",
-    supabaseKey: "sb_publishable_nIg3tcSJqvOy_tsaVneMNw_qbdrP7Hj",
+    // Backend no vizio-core compartilhado (ref emyjzjadmxgbtmxnzazu, sa-east-1), schema `consorcio`. Reconstruído 27/11/2026.
+    supabaseUrl: "https://emyjzjadmxgbtmxnzazu.supabase.co",
+    supabaseKey: "sb_publishable_PY2YDxUzGgaXRVtvCcasBA_Ml7YUBTC",
     // Token padrão do link curto de auto-cadastro (single-org). O base multi-empresa NÃO define isto (usa ?t=).
     cadastroToken: "61874307-d568-4aee-adb6-f3de7f03342e",
     // Instância single-org: sem auto-cadastro de empresa no login (novos acessos vêm por CONVITE).

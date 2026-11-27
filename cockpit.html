@@ -1243,13 +1243,13 @@ window.APP=(function(){
       var ext=(String(file.name).split(".").pop()||"pdf").toLowerCase().replace(/[^a-z0-9]/g,"")||"pdf";
       var path=S.org.id+"/"+id+"-"+Date.now()+"."+ext;
       toast("Enviando contrato assinado…","ok");
-      SB.storage.from("contratos").upload(path,file,{upsert:false,contentType:file.type}).then(function(up){
+      SB.storage.from("consorcio-contratos").upload(path,file,{upsert:false,contentType:file.type}).then(function(up){
         if(up.error){toast("Falha no envio: "+up.error.message,"danger");return;}
         var prev=c.assinado_url;
         SB.from("co_contratos").update({assinado_url:path}).eq("id",id).then(function(r){
           if(r.error){toast("Enviado, mas não vinculou: "+r.error.message,"danger");return;}
           c.assinado_url=path;
-          if(prev&&prev!==path&&String(prev).indexOf("http")!==0){SB.storage.from("contratos").remove([prev]);}
+          if(prev&&prev!==path&&String(prev).indexOf("http")!==0){SB.storage.from("consorcio-contratos").remove([prev]);}
           toast("Contrato assinado anexado.","ok");renderContratoDetalhe(id);
         });
       },function(){toast("Falha no envio do arquivo.","danger");});
@@ -1258,7 +1258,7 @@ window.APP=(function(){
   function baixarAssinado(id){
     var c=S.contratos.find(function(x){return x.id===id;}); if(!c||!c.assinado_url)return;
     if(String(c.assinado_url).indexOf("http")===0){window.open(c.assinado_url,"_blank","noopener");return;}
-    SB.storage.from("contratos").createSignedUrl(c.assinado_url,3600).then(function(r){
+    SB.storage.from("consorcio-contratos").createSignedUrl(c.assinado_url,3600).then(function(r){
       if(r.error||!r.data){toast("Não foi possível gerar o link: "+((r.error&&r.error.message)||"erro"),"danger");return;}
       window.open(r.data.signedUrl,"_blank","noopener");
     });
@@ -1269,7 +1269,7 @@ window.APP=(function(){
     confirmModal("Remover o contrato assinado anexado? O arquivo será apagado do armazenamento.",function(){
       var path=c.assinado_url;
       var done=function(){SB.from("co_contratos").update({assinado_url:null}).eq("id",id).then(function(r){if(r.error){toast("Erro: "+r.error.message,"danger");return;}c.assinado_url=null;toast("Anexo removido.","ok");renderContratoDetalhe(id);});};
-      if(path&&String(path).indexOf("http")!==0){SB.storage.from("contratos").remove([path]).then(done,done);}else done();
+      if(path&&String(path).indexOf("http")!==0){SB.storage.from("consorcio-contratos").remove([path]).then(done,done);}else done();
     },"Remover",true);
   }
   function criarCronograma(id){
@@ -2126,9 +2126,9 @@ window.APP=(function(){
     var ext=(String(file.name).split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"")||"png";
     var path=S.org.id+"/"+m.id+"-"+Date.now()+"."+ext;
     toast("Enviando foto…","ok");
-    SB.storage.from("avatars").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"}).then(function(up){
+    SB.storage.from("consorcio-avatars").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"}).then(function(up){
       if(up.error){toast("Falha no envio: "+up.error.message,"danger");return;}
-      var pub=SB.storage.from("avatars").getPublicUrl(path);
+      var pub=SB.storage.from("consorcio-avatars").getPublicUrl(path);
       var url=(pub&&pub.data&&pub.data.publicUrl)||"";
       SB.from("co_members").update({foto_url:url}).eq("id",m.id).then(function(r){
         if(r.error){toast("Enviado, mas não salvou: "+r.error.message,"danger");return;}
@@ -2280,7 +2280,7 @@ window.APP=(function(){
     if(booted)return;booted=true;
     if(!ALLOW_SIGNUP){var _sc=document.getElementById("signupCta");if(_sc)_sc.classList.add("hidden");}
     if(!CFG.supabaseUrl||CFG.supabaseUrl.indexOf("SEU-PROJETO")>=0||!window.supabase){document.getElementById("lgErr").textContent="Configuração pendente.";return;}
-    SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{db:{schema:"consorcio"},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     SB.auth.onAuthStateChange(function(ev){if(ev==="PASSWORD_RECOVERY"){mostrarDefinirSenha();}});
     var _aside=document.querySelector('#app aside');if(_aside)_aside.addEventListener('click',function(e){if(e.target.closest('nav.menu button'))toggleNav(false);});
     var _h=location.hash||"";
@@ -2316,7 +2316,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.13';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.14';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.

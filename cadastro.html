@@ -101,7 +101,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   var token=q("t")||CFG.cadastroToken||"";
   if(!token){errFull("Link de cadastro inválido.");return;}
   if(!CFG.supabaseUrl||!window.supabase){errFull("Serviço indisponível no momento.");return;}
-  var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+  var SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey,{db:{schema:"consorcio"}});
 
   function form(){
     el("content").innerHTML=
