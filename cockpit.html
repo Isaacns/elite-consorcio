@@ -1353,7 +1353,7 @@ window.APP=(function(){
   function portalLink(id){
     var c=S.contratos.find(function(x){return x.id===id;}); if(!c){return;}
     // reusa token existente ou cria
-    var token=(c._token)||(Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).slice(0,24);
+    var token=(c._token)||((window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).slice(0,24));
     SB.from("co_portal_links").upsert({token:token,org_id:S.org.id,contrato_id:id,ativo:true},{onConflict:"token"}).then(function(){
       c._token=token;
       var url=location.origin+location.pathname.replace(/[^/]*$/,"")+"portal.html?t="+token;
@@ -2316,7 +2316,7 @@ if(document.readyState!=="loading")APP.boot();
 <script src="aura.js?v=3"></script>
 <script>
 /* VERSÃO DO APP — bumpar a CADA deploy. É por este número que o push compara. */
-window.APP_VERSION = '1.0.14';   /* §14.2: nunca const */
+window.APP_VERSION = '1.0.15';   /* §14.2: nunca const */
 
 /* PUSH DE ATUALIZAÇÃO — padrão VIZIO §14.
    Publicar não é entregar: entregue é quando o código novo roda no navegador do cliente.
